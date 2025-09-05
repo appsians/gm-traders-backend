@@ -33,7 +33,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::6vkuzrdxr6E2JGLX',
+            '_route' => 'generated::Z6bkghb6zAViuL88',
           ),
           1 => NULL,
           2 => 
@@ -52,7 +52,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::ie2ajAwcjVlhnKTs',
+            '_route' => 'generated::wl6niBNa1lMuqnNn',
           ),
           1 => NULL,
           2 => 
@@ -71,7 +71,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::WE7HajtruJmNI7MK',
+            '_route' => 'generated::m3r6JwPeGYBgqnvU',
           ),
           1 => NULL,
           2 => 
@@ -91,7 +91,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::qIUuLXndc2uh0H7f',
+            '_route' => 'generated::eRhrLoj5NENjtHrd',
           ),
           1 => NULL,
           2 => 
@@ -111,12 +111,129 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::dxRUA9E5Xo6VO0MK',
+            '_route' => 'generated::gNa9iet2ldywjEC4',
           ),
           1 => NULL,
           2 => 
           array (
             'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/api/store-plant-qr-code' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'generated::8I64IliFUUgwilYz',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/api/plant-data' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'generated::bcG5LVrm3FCSInsg',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/api/check-plant-qr-code' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'generated::lAjrvYyj1wOjy89w',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/api/store-fruit-qr-code' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'generated::LPGFfGkLa0Orb9gm',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'POST' => 0,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/api/fruit-data' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'generated::rD2v7o3SXV80V7N5',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
+          ),
+          3 => NULL,
+          4 => false,
+          5 => false,
+          6 => NULL,
+        ),
+      ),
+      '/api/check-fruit-qr-code' => 
+      array (
+        0 => 
+        array (
+          0 => 
+          array (
+            '_route' => 'generated::1NfMP6ZxL0suwwVd',
+          ),
+          1 => NULL,
+          2 => 
+          array (
+            'GET' => 0,
+            'HEAD' => 1,
           ),
           3 => NULL,
           4 => false,
@@ -130,7 +247,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::c2j5f45ADPaBuAjZ',
+            '_route' => 'generated::FAHP2Un3XzRT4Pkd',
           ),
           1 => NULL,
           2 => 
@@ -150,7 +267,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::RnIrMXr4l4blribp',
+            '_route' => 'generated::Xmg3eFEOHBpgnyAd',
           ),
           1 => NULL,
           2 => 
@@ -170,7 +287,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::aehen4Oar0kacbv6',
+            '_route' => 'generated::YwBXUpU8gFIfh3Uz',
           ),
           1 => NULL,
           2 => 
@@ -197,7 +314,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::f2wdooVyjsysHXrh',
+            '_route' => 'generated::HMKRKXkqA3IMYZ55',
           ),
           1 => 
           array (
@@ -217,7 +334,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::MdWdsj3fSLRBK80g',
+            '_route' => 'generated::7UVfaHyIrUhjxX6D',
           ),
           1 => 
           array (
@@ -236,7 +353,7 @@ app('router')->setCompiledRoutes(
         array (
           0 => 
           array (
-            '_route' => 'generated::Q8cIdQALsYT015tc',
+            '_route' => 'generated::TkkNtgjKtf0RDHmC',
           ),
           1 => 
           array (
@@ -327,7 +444,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::6vkuzrdxr6E2JGLX' => 
+    'generated::Z6bkghb6zAViuL88' => 
     array (
       'methods' => 
       array (
@@ -347,7 +464,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::6vkuzrdxr6E2JGLX',
+        'as' => 'generated::Z6bkghb6zAViuL88',
       ),
       'fallback' => false,
       'defaults' => 
@@ -363,7 +480,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::ie2ajAwcjVlhnKTs' => 
+    'generated::wl6niBNa1lMuqnNn' => 
     array (
       'methods' => 
       array (
@@ -383,7 +500,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::ie2ajAwcjVlhnKTs',
+        'as' => 'generated::wl6niBNa1lMuqnNn',
       ),
       'fallback' => false,
       'defaults' => 
@@ -399,7 +516,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::WE7HajtruJmNI7MK' => 
+    'generated::m3r6JwPeGYBgqnvU' => 
     array (
       'methods' => 
       array (
@@ -421,7 +538,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::WE7HajtruJmNI7MK',
+        'as' => 'generated::m3r6JwPeGYBgqnvU',
       ),
       'fallback' => false,
       'defaults' => 
@@ -437,7 +554,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::qIUuLXndc2uh0H7f' => 
+    'generated::eRhrLoj5NENjtHrd' => 
     array (
       'methods' => 
       array (
@@ -459,7 +576,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::qIUuLXndc2uh0H7f',
+        'as' => 'generated::eRhrLoj5NENjtHrd',
       ),
       'fallback' => false,
       'defaults' => 
@@ -475,7 +592,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::f2wdooVyjsysHXrh' => 
+    'generated::HMKRKXkqA3IMYZ55' => 
     array (
       'methods' => 
       array (
@@ -497,7 +614,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::f2wdooVyjsysHXrh',
+        'as' => 'generated::HMKRKXkqA3IMYZ55',
       ),
       'fallback' => false,
       'defaults' => 
@@ -513,7 +630,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::dxRUA9E5Xo6VO0MK' => 
+    'generated::gNa9iet2ldywjEC4' => 
     array (
       'methods' => 
       array (
@@ -534,7 +651,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::dxRUA9E5Xo6VO0MK',
+        'as' => 'generated::gNa9iet2ldywjEC4',
       ),
       'fallback' => false,
       'defaults' => 
@@ -550,7 +667,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::MdWdsj3fSLRBK80g' => 
+    'generated::7UVfaHyIrUhjxX6D' => 
     array (
       'methods' => 
       array (
@@ -571,7 +688,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::MdWdsj3fSLRBK80g',
+        'as' => 'generated::7UVfaHyIrUhjxX6D',
       ),
       'fallback' => false,
       'defaults' => 
@@ -587,7 +704,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::Q8cIdQALsYT015tc' => 
+    'generated::TkkNtgjKtf0RDHmC' => 
     array (
       'methods' => 
       array (
@@ -608,7 +725,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::Q8cIdQALsYT015tc',
+        'as' => 'generated::TkkNtgjKtf0RDHmC',
       ),
       'fallback' => false,
       'defaults' => 
@@ -624,7 +741,232 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::c2j5f45ADPaBuAjZ' => 
+    'generated::8I64IliFUUgwilYz' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'api/store-plant-qr-code',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'api',
+          1 => 'auth:sanctum',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Api\\PlantScannerController@store',
+        'controller' => 'App\\Http\\Controllers\\Api\\PlantScannerController@store',
+        'namespace' => NULL,
+        'prefix' => 'api',
+        'where' => 
+        array (
+        ),
+        'as' => 'generated::8I64IliFUUgwilYz',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'generated::bcG5LVrm3FCSInsg' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'api/plant-data',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'api',
+          1 => 'auth:sanctum',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Api\\PlantScannerController@showPlantData',
+        'controller' => 'App\\Http\\Controllers\\Api\\PlantScannerController@showPlantData',
+        'namespace' => NULL,
+        'prefix' => 'api',
+        'where' => 
+        array (
+        ),
+        'as' => 'generated::bcG5LVrm3FCSInsg',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'generated::lAjrvYyj1wOjy89w' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'api/check-plant-qr-code',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'api',
+          1 => 'auth:sanctum',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Api\\PlantScannerController@checkQrCode',
+        'controller' => 'App\\Http\\Controllers\\Api\\PlantScannerController@checkQrCode',
+        'namespace' => NULL,
+        'prefix' => 'api',
+        'where' => 
+        array (
+        ),
+        'as' => 'generated::lAjrvYyj1wOjy89w',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'generated::LPGFfGkLa0Orb9gm' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'POST',
+      ),
+      'uri' => 'api/store-fruit-qr-code',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'api',
+          1 => 'auth:sanctum',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Api\\FruitScannerController@store',
+        'controller' => 'App\\Http\\Controllers\\Api\\FruitScannerController@store',
+        'namespace' => NULL,
+        'prefix' => 'api',
+        'where' => 
+        array (
+        ),
+        'as' => 'generated::LPGFfGkLa0Orb9gm',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'generated::rD2v7o3SXV80V7N5' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'api/fruit-data',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'api',
+          1 => 'auth:sanctum',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Api\\FruitScannerController@showFruitData',
+        'controller' => 'App\\Http\\Controllers\\Api\\FruitScannerController@showFruitData',
+        'namespace' => NULL,
+        'prefix' => 'api',
+        'where' => 
+        array (
+        ),
+        'as' => 'generated::rD2v7o3SXV80V7N5',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'generated::1NfMP6ZxL0suwwVd' => 
+    array (
+      'methods' => 
+      array (
+        0 => 'GET',
+        1 => 'HEAD',
+      ),
+      'uri' => 'api/check-fruit-qr-code',
+      'action' => 
+      array (
+        'middleware' => 
+        array (
+          0 => 'api',
+          1 => 'auth:sanctum',
+        ),
+        'uses' => 'App\\Http\\Controllers\\Api\\FruitScannerController@checkQrCode',
+        'controller' => 'App\\Http\\Controllers\\Api\\FruitScannerController@checkQrCode',
+        'namespace' => NULL,
+        'prefix' => 'api',
+        'where' => 
+        array (
+        ),
+        'as' => 'generated::1NfMP6ZxL0suwwVd',
+      ),
+      'fallback' => false,
+      'defaults' => 
+      array (
+      ),
+      'wheres' => 
+      array (
+      ),
+      'bindingFields' => 
+      array (
+      ),
+      'lockSeconds' => NULL,
+      'waitSeconds' => NULL,
+      'withTrashed' => false,
+    ),
+    'generated::FAHP2Un3XzRT4Pkd' => 
     array (
       'methods' => 
       array (
@@ -647,7 +989,7 @@ app('router')->setCompiledRoutes(
         'where' => 
         array (
         ),
-        'as' => 'generated::c2j5f45ADPaBuAjZ',
+        'as' => 'generated::FAHP2Un3XzRT4Pkd',
       ),
       'fallback' => false,
       'defaults' => 
@@ -663,7 +1005,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::RnIrMXr4l4blribp' => 
+    'generated::Xmg3eFEOHBpgnyAd' => 
     array (
       'methods' => 
       array (
@@ -673,7 +1015,7 @@ app('router')->setCompiledRoutes(
       'uri' => 'up',
       'action' => 
       array (
-        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:819:"function () {
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:843:"function () {
                     $exception = null;
 
                     try {
@@ -688,11 +1030,11 @@ app('router')->setCompiledRoutes(
                         $exception = $e->getMessage();
                     }
 
-                    return response(\\Illuminate\\Support\\Facades\\View::file(\'C:\\\\gm-traders-app\\\\vendor\\\\laravel\\\\framework\\\\src\\\\Illuminate\\\\Foundation\\\\Configuration\'.\'/../resources/health-up.blade.php\', [
+                    return response(\\Illuminate\\Support\\Facades\\View::file(\'C:\\\\gm-traders-backend\\\\gm-traders-backend\\\\vendor\\\\laravel\\\\framework\\\\src\\\\Illuminate\\\\Foundation\\\\Configuration\'.\'/../resources/health-up.blade.php\', [
                         \'exception\' => $exception,
                     ]), status: $exception ? 500 : 200);
-                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000004eb0000000000000000";}}',
-        'as' => 'generated::RnIrMXr4l4blribp',
+                }";s:5:"scope";s:54:"Illuminate\\Foundation\\Configuration\\ApplicationBuilder";s:4:"this";N;s:4:"self";s:32:"00000000000004ef0000000000000000";}}',
+        'as' => 'generated::Xmg3eFEOHBpgnyAd',
       ),
       'fallback' => false,
       'defaults' => 
@@ -708,7 +1050,7 @@ app('router')->setCompiledRoutes(
       'waitSeconds' => NULL,
       'withTrashed' => false,
     ),
-    'generated::aehen4Oar0kacbv6' => 
+    'generated::YwBXUpU8gFIfh3Uz' => 
     array (
       'methods' => 
       array (
@@ -724,13 +1066,13 @@ app('router')->setCompiledRoutes(
         ),
         'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:0:{}s:8:"function";s:44:"function () {
     return \\view(\'welcome\');
-}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000004f60000000000000000";}}',
+}";s:5:"scope";s:37:"Illuminate\\Routing\\RouteFileRegistrar";s:4:"this";N;s:4:"self";s:32:"00000000000005010000000000000000";}}',
         'namespace' => NULL,
         'prefix' => '',
         'where' => 
         array (
         ),
-        'as' => 'generated::aehen4Oar0kacbv6',
+        'as' => 'generated::YwBXUpU8gFIfh3Uz',
       ),
       'fallback' => false,
       'defaults' => 
@@ -756,13 +1098,13 @@ app('router')->setCompiledRoutes(
       'uri' => 'storage/{path}',
       'action' => 
       array (
-        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:3:{s:4:"disk";s:5:"local";s:6:"config";a:5:{s:6:"driver";s:5:"local";s:4:"root";s:37:"C:\\gm-traders-app\\storage\\app/private";s:5:"serve";b:1;s:5:"throw";b:0;s:6:"report";b:0;}s:12:"isProduction";b:0;}s:8:"function";s:323:"function (\\Illuminate\\Http\\Request $request, string $path) use ($disk, $config, $isProduction) {
+        'uses' => 'O:55:"Laravel\\SerializableClosure\\UnsignedSerializableClosure":1:{s:12:"serializable";O:46:"Laravel\\SerializableClosure\\Serializers\\Native":5:{s:3:"use";a:3:{s:4:"disk";s:5:"local";s:6:"config";a:5:{s:6:"driver";s:5:"local";s:4:"root";s:60:"C:\\gm-traders-backend\\gm-traders-backend\\storage\\app/private";s:5:"serve";b:1;s:5:"throw";b:0;s:6:"report";b:0;}s:12:"isProduction";b:0;}s:8:"function";s:323:"function (\\Illuminate\\Http\\Request $request, string $path) use ($disk, $config, $isProduction) {
                     return (new \\Illuminate\\Filesystem\\ServeFile(
                         $disk,
                         $config,
                         $isProduction
                     ))($request, $path);
-                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000004fe0000000000000000";}}',
+                }";s:5:"scope";s:47:"Illuminate\\Filesystem\\FilesystemServiceProvider";s:4:"this";N;s:4:"self";s:32:"00000000000005040000000000000000";}}',
         'as' => 'storage.local',
       ),
       'fallback' => false,

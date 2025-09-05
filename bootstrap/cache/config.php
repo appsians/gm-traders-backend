@@ -109,9 +109,9 @@
   array (
     'paths' => 
     array (
-      0 => 'C:\\gm-traders-app\\resources\\views',
+      0 => 'C:\\gm-traders-backend\\gm-traders-backend\\resources\\views',
     ),
-    'compiled' => 'C:\\gm-traders-app\\storage\\framework\\views',
+    'compiled' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\framework\\views',
   ),
   'app' => 
   array (
@@ -273,8 +273,8 @@
       'file' => 
       array (
         'driver' => 'file',
-        'path' => 'C:\\gm-traders-app\\storage\\framework/cache/data',
-        'lock_path' => 'C:\\gm-traders-app\\storage\\framework/cache/data',
+        'path' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\framework/cache/data',
+        'lock_path' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\framework/cache/data',
       ),
       'memcached' => 
       array (
@@ -447,7 +447,7 @@
       'local' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\gm-traders-app\\storage\\app/private',
+        'root' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\app/private',
         'serve' => true,
         'throw' => false,
         'report' => false,
@@ -455,7 +455,7 @@
       'public' => 
       array (
         'driver' => 'local',
-        'root' => 'C:\\gm-traders-app\\storage\\app/public',
+        'root' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\app/public',
         'url' => 'http://localhost:8000/storage',
         'visibility' => 'public',
         'throw' => false,
@@ -477,7 +477,7 @@
     ),
     'links' => 
     array (
-      'C:\\gm-traders-app\\public\\storage' => 'C:\\gm-traders-app\\storage\\app/public',
+      'C:\\gm-traders-backend\\gm-traders-backend\\public\\storage' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\app/public',
     ),
   ),
   'logging' => 
@@ -502,14 +502,14 @@
       'single' => 
       array (
         'driver' => 'single',
-        'path' => 'C:\\gm-traders-app\\storage\\logs/laravel.log',
+        'path' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\logs/laravel.log',
         'level' => 'debug',
         'replace_placeholders' => true,
       ),
       'daily' => 
       array (
         'driver' => 'daily',
-        'path' => 'C:\\gm-traders-app\\storage\\logs/laravel.log',
+        'path' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\logs/laravel.log',
         'level' => 'debug',
         'days' => 14,
         'replace_placeholders' => true,
@@ -574,7 +574,7 @@
       ),
       'emergency' => 
       array (
-        'path' => 'C:\\gm-traders-app\\storage\\logs/laravel.log',
+        'path' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\logs/laravel.log',
       ),
     ),
   ),
@@ -652,7 +652,7 @@
       'theme' => 'default',
       'paths' => 
       array (
-        0 => 'C:\\gm-traders-app\\resources\\views/vendor/mail',
+        0 => 'C:\\gm-traders-backend\\gm-traders-backend\\resources\\views/vendor/mail',
       ),
     ),
   ),
@@ -771,7 +771,7 @@
     'lifetime' => 120,
     'expire_on_close' => false,
     'encrypt' => false,
-    'files' => 'C:\\gm-traders-app\\storage\\framework/sessions',
+    'files' => 'C:\\gm-traders-backend\\gm-traders-backend\\storage\\framework/sessions',
     'connection' => NULL,
     'table' => 'sessions',
     'store' => NULL,

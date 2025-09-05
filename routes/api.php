@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Api\StoreController;
+use App\Http\Controllers\Api\PlantScannerController;
+use App\Http\Controllers\Api\FruitScannerController;
 use App\Http\Controllers\UserController;
 
 // Route::get('/user', function (Request $request) {
@@ -25,7 +27,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::delete('/{id}', [StoreController::class, 'destroy']);
     });
 
+    //plant scaner apis
+    Route::post('/store-plant-qr-code', [PlantScannerController::class, 'store']);
+    Route::get('/plant-data', [PlantScannerController::class, 'showPlantData']);
+    Route::post('/check-plant-qr-code', [PlantScannerController::class, 'checkQrCode']); // check qr exists
+
+    //fruit scaner apis
+    Route::post('/store-fruit-qr-code', [FruitScannerController::class, 'store']);
+    Route::get('/fruit-data', [FruitScannerController::class, 'showFruitData']);
+    Route::get('/check-fruit-qr-code', [FruitScannerController::class, 'checkQrCode']); // check qr exists
+
+
     Route::middleware(['role:admin'])->group(function () {
         Route::get('/admin/dashboard', [UserController::class, 'adminDashboard']);
+
     });
 });

@@ -14,7 +14,7 @@ return new class extends Migration
        
         Schema::create('stores', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('store_category_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('store_category_id')->constrained('store_categories')->cascadeOnDelete();
             $table->string('name'); // e.g., Granny Smith, Golden Delicious
             $table->string('scientific_name')->nullable(); // e.g., Malus domestica
             $table->string('size')->nullable(); // Medium, Small

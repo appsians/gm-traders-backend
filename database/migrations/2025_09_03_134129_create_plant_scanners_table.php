@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('plant_scanners', function (Blueprint $table) {
         $table->id();
-        $table->string('tree_id')->unique();
         $table->string('plant_name');
-        $table->longText('qr_code_image')->nullable();
+         $table->string('qr_code')->unique();
         $table->string('variety')->nullable();
         $table->date('birthday')->nullable();
         $table->text('care_instructions')->nullable();
+        $table->string('verified_by')->nullable();
+         $table->longText('qr_code_image')->nullable();
         $table->timestamps();
         });
     }

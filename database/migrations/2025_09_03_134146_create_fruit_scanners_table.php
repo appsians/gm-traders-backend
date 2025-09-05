@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('fruit_scanners', function (Blueprint $table) {
             $table->id();
-            $table->string('fruit_id')->unique();
+            $table->string('fruit_qr_code')->unique();
             $table->string('fruit_name')->nullable();
             $table->longText('qr_code_image')->nullable();
             $table->string('origin')->nullable();

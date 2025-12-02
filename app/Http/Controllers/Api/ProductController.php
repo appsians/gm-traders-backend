@@ -1,0 +1,631 @@
+<?php
+namespace App\Http\Controllers\Api;
+use App\Models\Product;
+use App\Http\Controllers\Controller;
+use App\Models\Fruit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Renderer\Image\ImagickImageBackEnd;
+use BaconQrCode\Writer;
+use Carbon\Carbon;
+
+
+
+
+
+class ProductController extends Controller
+{
+     public function index()
+    {
+        $products = Product::all();
+        return view('Admin.plant.datatable' ,compact('products'));
+    }
+
+
+        public function show($id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json(['status' => 'error', 'message' => 'lant not found'], 404);
+        }
+
+        return response()->json(['status' => 'success', 'data' => $product]);
+    }
+
+        public function store(Request $request)
+    {
+        
+
+
+   $validator = Validator::make($request->all(), [
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'grading' => 'required|string',
+        'image' => 'required|image',
+        'price' => 'required|integer',
+         'age' => 'required',
+       // 'plant_id' => 'required|string|unique:products,plant_id',
+    ], [
+       // 'plant_id.unique' => 'Tree ID already exists, please enter a new one.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+  $plantId = $this->generatePlantId();
+
+
+
+
+
+        $data = $request->only(['title','image','description','price','age', 'category', 'grading','discount_price']);
+
+        $data['plant_id'] = $plantId;
+           $data['category'] = 'plant';
+         
+
+        if ($request->hasFile('image')) {
+            $filename = time() . '.' . $request->image->extension();
+            $request->image->move(public_path(''), $filename);
+            $data['image'] = '' . $filename;
+        }
+
+
+        $product = Product::create($data);
+        if(!$product){
+                    return response()->json(['status' => false, 'message' => 'Plant not found', 'data' => $product],200);
+        }
+        else
+        {
+
+        return response()->json(['status' => true, 'message' => 'Plant  created successfully', 'data' => $product],200);
+    }
+}
+
+
+       public function update(Request $request)
+    {
+         $product = Product::find($request->id);
+
+
+        if (!$product) {
+            return response()->json(['status' => 'error', 'message' => 'plant not found'], 404);
+        }
+
+      $validator = Validator::make($request->all(), [
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'grading' => 'required|string',
+        
+        'image' => 'image',
+    
+        'price' => 'required|integer',
+           'discount_price' => 'required|numeric|min:0|lte:price',
+          'age' => 'required',
+       // 'plant_id' => 'required|string|unique:products,plant_id',
+    ], [
+       // 'plant_id.unique' => 'Tree ID already exists, please enter a new one.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+
+        $data = $request->only(['title','plant_id', 'discount_price','description','grading', 'price','image','age']);
+
+        if ($request->hasFile('image')) {
+            $filename = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('uploads/products'), $filename);
+            $data['image'] = 'uploads/products/' . $filename;
+        }
+
+        $product->update($data);
+
+
+        return response()->json(['status' => true, 'message' => 'Plant Updated Successfully', 'data' => $product->fresh()],200);
+    }
+
+
+
+       public function destroy($id)
+    {
+        $product = Product::find($id);
+
+        if (!$product) {
+            return response()->json(['status' => false, 'message' => 'Plant Not Found'], 404);
+        }
+
+        $product->delete();
+
+        return response()->json(['status' => true, 'message' => 'Plant Deleted']);
+    }
+
+    // product qr_code
+
+     public function scanProduct(Request $request, $plant_id = null)
+{
+   
+    $plantId = $plant_id ?? $request->get('plant_id');
+
+    Log::info('📦 Full Scan Request Raw:', [
+        'url_param' => $plant_id,
+        'all' => $request->all(),
+        'query' => $request->query(),
+        'final_plant_id' => $plantId,
+    ]);
+
+    // 🧩 If plant ID is still missing, stop here
+    if (!$plantId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid Plant_id',
+        ], 200);
+    }
+
+    // 🪴 Find product by plant_id
+    $product = Product::where('plant_id', $plantId)->first();
+
+    Log::info('🔎 Scan Product Result:', [
+        'plant_id' => $plantId,
+        'found' => (bool) $product,
+    ]);
+
+    if (!$product) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Product not found',
+        ], 200);
+    }
+
+return response()->json([ 'status' => true, 'message' => 'plant data fetched successfully', // 'user' => $user->only(['id', 'name', 'email']),
+'plant_id' => $product->plant_id,
+'age' => $product->age,
+'title' => $product->title,
+'variety' => 'apple variety',
+// 'price'=> $product->price, 
+],200);
+}
+
+    //fruits scaning
+
+
+
+
+    //      public function scanfruit(Request $request)
+    // {
+
+    //   // Log::info('Registration request: ' , $request->all());
+
+
+
+    //   $request->validate([
+    //         // 'fruit_id' => 'required',
+    //     ]);
+
+    //     $fruit = Fruit::where('fruit_id', $request->fruit_id)->first();
+
+    //     if (!$fruit) {
+    //         return response()->json([
+    //             'status' => false,
+    //             'message' => 'fruit not found',
+    //         ], 200);
+    //     }
+
+    //     // return response()->json([
+    //     //     'status' => true,
+    //     //     'message' => 'fruit fetched successfully',
+    //     //     'data' => $fruit,
+
+    //     // ]);
+
+    //      return response()->json([
+    //     'status' => true,
+    //     'message' => 'fruit data fetched successfully',
+
+    //       // 'user' => $user->only(['id', 'name', 'email']),
+    //         'fruit_id' => $fruit->fruit_id,
+    //       // 'age' => $product->age,
+    //         'title' => $fruit->title,
+    //         'origin' => $fruit->origin,
+    //         'harvested_date'=> $fruit->harvested_date,
+
+
+
+    //      ]);
+    // }
+    
+    
+    
+    
+    public function scanfruit(Request $request, $fruit_id = null)
+{
+    // 🔍 Determine fruit_id from URL or query parameter
+    $fruitId = $fruit_id ?? $request->query('fruit_id');
+
+    Log::info('🍎 Scan Fruit Request Details:', [
+        'url_param' => $fruit_id,
+        'query_param' => $request->query(),
+        'final_fruit_id' => $fruitId,
+    ]);
+
+    // 🛑 Stop if fruit_id not provided
+    if (!$fruitId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'fruit_id not provided in request',
+        ], 400);
+    }
+
+    // 🪴 Find fruit by fruit_id
+    $fruit = Fruit::where('fruit_id', $fruitId)->first();
+
+    Log::info('🔎 Scan Fruit Result:', [
+        'fruit_id' => $fruitId,
+        'found' => (bool) $fruit,
+    ]);
+
+    if (!$fruit) {
+        // ❌ Fruit not found response
+        return response()->json([
+            'status' => false,
+            'message' => 'Fruit not found',
+        ], 200);
+    }
+
+ 
+         return response()->json([
+        'status' => true,
+        'message' => 'fruit data fetched successfully',
+
+          // 'user' => $user->only(['id', 'name', 'email']),
+            'fruit_id' => $fruit->fruit_id,
+          // 'age' => $product->age,
+            'title' => $fruit->title,
+            'origin' => $fruit->origin,
+            'harvested_date'=>  Carbon::parse($fruit->harvested_date)->format('M d, Y'),
+            
+
+
+
+         ]);
+}
+
+
+    // fruits cruds
+
+       public function fruit()
+    {
+        $fruit = Fruit::all();
+
+        return response()->json(['status' => 'success', 'data' => $fruit]);
+    }
+
+
+
+   // store
+
+
+          public function fruitstore(Request $request)
+    {
+        
+
+          $validator = Validator::make($request->all(), [
+        'title' => 'required|string|max:255',
+        'origin' => 'required|string',
+        'image' => 'required|image',
+        'harvested_date' => 'required',
+      //  'fruit_id' => 'required|string|unique:fruits,fruit_id',
+    ], [
+       // 'fruit_id.unique' => 'fruit_id already exists, please enter a new one.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+ 
+      $fruitId = $this->generateFruitId();
+
+        $data = $request->only(['title','origin','harvested_date','fruit_id','image']);
+
+         $data['fruit_id'] = $fruitId;
+
+        if ($request->hasFile('image')) {
+            $filename = time() . '.' . $request->image->extension();
+            $request->image->move(public_path(''), $filename);
+            $data['image'] = '' . $filename;
+        }
+
+
+        $fruit = Fruit::create($data);
+
+        return response()->json(['status' => 'success', 'message' => 'Fruits created successfully', 'data' => $fruit]);
+    }
+
+
+
+
+
+
+    public function showfruits($id)
+{
+
+    $fruit = Fruit::find($id);
+
+    if (!$fruit) {
+        return response()->json(['status' => false, 'message' => 'Product not found'], 404);
+    }
+
+     return response()->json([
+        'status' => true,
+        'data' => $fruit,
+    ]);
+}
+
+public function updatefruit(Request $request)
+{
+    
+       $validator = Validator::make($request->all(), [
+        'title' => 'required|string|max:255',
+        'origin' => 'required|string',
+        'image' => 'image',
+        'harvested_date' => 'required',
+      //  'fruit_id' => 'required|string|unique:fruits,fruit_id',
+    ], [
+       // 'fruit_id.unique' => 'fruit_id already exists, please enter a new one.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => false,
+            'errors' => $validator->errors(),
+        ], 422);
+    }
+  
+   $fruit = Fruit::find($request->id);
+
+    if (!$fruit) {
+        return response()->json(['status' => 'error', 'message' => 'Fruit not found'], 404);
+    }
+    
+      $fruit->title = $request->title;
+        //  $fruit->description = $request->description;
+        $fruit->origin = $request->origin;
+        $fruit->harvested_date = $request->harvested_date;
+
+    
+    if($request->hasFile('image')) {
+            if($fruit->image && file_exists(public_path($fruit->image))) {
+                @unlink(public_path($fruit->image));
+            }
+
+            $filename = time() . '.' . $request->image->extension();
+            $request->image->move(public_path(''), $filename);
+            $fruit->image = $filename;
+        }
+
+    $fruit->update();
+
+    return response()->json(['status' => 'success', 'message' => 'Fruit updated successfully!']);
+}
+
+
+
+
+   public function destroyfruit($id)
+    {
+        $product = Fruit::find($id);
+
+        if (!$product) {
+            return response()->json(['status' => 'error', 'message' => 'Fruits not found'], 404);
+        }
+
+        $product->delete();
+
+        return response()->json(['status' => 'success', 'message' => 'Fruits deleted successfully']);
+    }
+
+
+    //generate plant and fruit ids
+
+    function generatePlantId()
+{
+      $numbers = '0123456789';
+    $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    // Generate mostly numbers
+    $id = '';
+    for ($i = 0; $i < 10; $i++) {
+        // 70% chance number, 30% chance letter
+        $id .= rand(1, 10) > 3
+            ? $numbers[rand(0, strlen($numbers) - 1)]
+            : $letters[rand(0, strlen($letters) - 1)];
+    }
+
+    return 'plant-' . $id;
+
+}
+
+function generateFruitId()
+{
+    $numbers = '0123456789';
+    $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    $id = '';
+    for ($i = 0; $i < 10; $i++) {
+        // 70% chance number, 30% chance letter
+        $id .= rand(1, 10) > 3
+            ? $numbers[rand(0, strlen($numbers) - 1)]
+            : $letters[rand(0, strlen($letters) - 1)];
+    }
+
+    return 'fruit-' . $id;
+}
+
+// generate qr code 
+
+
+public function generateQr(Request $request)
+{
+    $plant = Product::find($request->id);
+
+    if (!$plant) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Plant not found'
+        ]);
+    }
+
+    $plantId = $plant->plant_id; // only the plant ID, e.g. "plant-941454F56R"
+
+    $fileName = $plantId . '.svg';
+    $directory = public_path('qrcodes');
+
+    if (!file_exists($directory)) {
+        mkdir($directory, 0755, true);
+    }
+
+    $fullPath = $directory . '/' . $fileName;
+
+    // ✅ Generate QR code that contains ONLY the plant ID (no URL)
+    $renderer = new ImageRenderer(
+        new RendererStyle(300), // size of QR code
+        new SvgImageBackEnd()   // SVG output
+    );
+
+    $writer = new Writer($renderer);
+
+    // ⚠️ Important: this line must use $plantId (not URL)
+    $writer->writeFile($plantId, $fullPath);
+
+    // Save the QR filename to database
+    $plant->qr_code = $fileName;
+    $plant->save();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'QR Code generated successfully',
+        'qr_code_url' => asset('qrcodes/' . $fileName)
+    ]);
+}
+public function generateFruitQr(Request $request)
+{
+    // 🔍 Find fruit by ID
+    $fruit = Fruit::find($request->id);
+
+    if (!$fruit) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Fruit not found'
+        ], 404);
+    }
+
+    $fruitId = $fruit->fruit_id; // only the fruit ID, e.g. "fruit-123ABC"
+
+    $fileName = $fruitId . '.jpg';
+    $directory = public_path('qrcodes');
+
+    // ✅ Create directory if not exists
+    if (!file_exists($directory)) {
+        mkdir($directory, 0755, true);
+    }
+
+    $fullPath = $directory . '/' . $fileName;
+
+    // 🖼 Generate QR code containing ONLY the fruit ID
+    $renderer = new ImageRenderer(
+    new RendererStyle(300),
+    new ImagickImageBackEnd() // PNG FIX for mobile print
+);
+
+    $writer = new Writer($renderer);
+
+    // ⚠️ Important: QR contains only fruitId
+    $writer->writeFile($fruitId, $fullPath);
+
+    // Save QR filename to database
+    $fruit->qr_code = $fileName;
+    $fruit->save();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'QR Code generated successfully',
+        'qr_code_url' => asset('qrcodes/' . $fileName)
+    ]);
+}
+
+
+// public function generateFruitQr(Request $request)
+// {
+//     // 🔍 Find fruit by ID
+//     $fruit = Fruit::find($request->id);
+
+//     if (!$fruit) {
+//         return response()->json([
+//             'status' => false,
+//             'message' => 'Fruit not found'
+//         ], 404);
+//     }
+
+//     $fruitId = $fruit->fruit_id; // only the fruit ID, e.g. "fruit-123ABC"
+
+//     $fileName = $fruitId . '.svg';
+//     $directory = public_path('qrcodes');
+
+//     // ✅ Create directory if not exists
+//     if (!file_exists($directory)) {
+//         mkdir($directory, 0755, true);
+//     }
+
+//     $fullPath = $directory . '/' . $fileName;
+
+//     // 🖼 Generate QR code containing ONLY the fruit ID
+//     $renderer = new ImageRenderer(
+//         new RendererStyle(300), // size of QR code
+//         new SvgImageBackEnd()   // SVG format
+//     );
+
+//     $writer = new Writer($renderer);
+//     $writer->writeFile($fruitId, $fullPath);
+
+//     // 🔹 Now inject company title "BGM Trader" into SVG
+//     $svgContent = file_get_contents($fullPath);
+
+//     // Add <text> element at the bottom (adjust x, y, font-size as needed)
+//     $textSvg = '<text x="50%" y="97%" text-anchor="middle" font-size="24" fill="black" font-family="Arial">BGM Trader</text>';
+
+//     // Insert the text before closing </svg>
+//     $svgContent = str_replace('</svg>', $textSvg . '</svg>', $svgContent);
+
+//     // Save back to file
+//     file_put_contents($fullPath, $svgContent);
+
+//     // Save QR filename to database
+//     $fruit->qr_code = $fileName;
+//     $fruit->save();
+
+//     return response()->json([
+//         'status' => true,
+//         'message' => 'QR Code generated successfully',
+//         'qr_code_url' => asset('qrcodes/' . $fileName)
+//     ]);
+// }
+
+}
+

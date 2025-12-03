@@ -23,8 +23,74 @@ class ProductController extends Controller
 {
      public function index()
     {
-        $products = Product::all();
-        return view('Admin.plant.datatable' ,compact('products'));
+        return view('Admin.plant.datatable');
+    }
+
+    public function plantsData(Request $request)
+    {
+        $draw = $request->get('draw');
+        $start = $request->get("start");
+        $rowperpage = $request->get("length");
+
+        $columnIndex_arr = $request->get('order');
+        $columnName_arr = $request->get('columns');
+        $order_arr = $request->get('order');
+        $search_arr = $request->get('search');
+
+        $columnIndex = isset($columnIndex_arr[0]['column']) ? $columnIndex_arr[0]['column'] : 0;
+        $columnName = isset($columnName_arr[$columnIndex]['data']) ? $columnName_arr[$columnIndex]['data'] : 'id';
+        $columnSortOrder = isset($order_arr[0]['dir']) ? $order_arr[0]['dir'] : 'desc';
+        $searchValue = isset($search_arr['value']) ? $search_arr['value'] : '';
+
+        $columnMap = [
+            'id' => 'id',
+            'title' => 'title',
+            'price' => 'price',
+            'age' => 'age',
+        ];
+
+        $dbColumnName = $columnMap[$columnName] ?? 'id';
+
+        $query = Product::where('category', 'plant');
+
+        if ($searchValue != '') {
+            $query->where(function($q) use ($searchValue) {
+                $q->where('title', 'like', '%' . $searchValue . '%')
+                  ->orWhere('plant_id', 'like', '%' . $searchValue . '%')
+                  ->orWhere('price', 'like', '%' . $searchValue . '%')
+                  ->orWhere('age', 'like', '%' . $searchValue . '%');
+            });
+        }
+
+        $totalRecords = Product::where('category', 'plant')->count();
+        $totalRecordswithFilter = $query->count();
+
+        $query->orderBy($dbColumnName, $columnSortOrder);
+        $products = $query->skip($start)->take($rowperpage)->get();
+
+        $data_arr = [];
+        foreach ($products as $product) {
+            $data_arr[] = [
+                'id' => $product->id,
+                'plant_id' => $product->plant_id ?? '-',
+                'image' => $product->image,
+                'title' => $product->title ?? '-',
+                'price' => $product->price ?? '-',
+                'age' => $product->age ?? '-',
+                'grading' => $product->grading ?? '-',
+                'discount_price' => $product->discount_price ?? '-',
+                'qr_code' => $product->qr_code ?? null,
+            ];
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "iTotalRecords" => $totalRecords,
+            "iTotalDisplayRecords" => $totalRecordswithFilter,
+            "aaData" => $data_arr
+        ];
+
+        return response()->json($response);
     }
 
 

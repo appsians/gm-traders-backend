@@ -1,225 +1,225 @@
-
-
-
 @extends('layouts.app')
 
 @section('content')
-
-{{-- <style>
-  /* Remove large spacing before the buttons */
-  .form-actions {
-    margin-top: 5px !important;
-  }
-
-  /* Optional: make buttons look more compact */
-  .btn {
-    padding: 6px 18px !important;
-    font-size: 14px;
-  }
-
-  /* Optional: if you still see a big gap, reduce spacing from parent div */
-  form .mb-3:last-of-type {
-    margin-bottom: 0 !important;
-  }
-</style> --}}
-
-
-{{-- <div class="page-content d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-
-
-				<nav class="page-breadcrumb">
-					<ol class="breadcrumb">
-						<li class="breadcrumb-item"><a href="#">Forms</a></li>
-						<li class="breadcrumb-item active" aria-current="page">Basic Elements</li>
-					</ol>
-				</nav>
-<div class="row">
-					<div class="col-md-6 grid-margin stretch-card">
-            <div class="card">
-              <div class="card-body">
-
-								<h6 class="card-title">Basic Form</h6>
-
-								<form class="forms-sample">
-									<div class="mb-3">
-										<label for="exampleInputUsername1" class="form-label">Username</label>
-										<input type="text" class="form-control" id="exampleInputUsername1" autocomplete="off" placeholder="Username">
-									</div>
-									<div class="mb-3">
-										<label for="exampleInputEmail1" class="form-label">Email address</label>
-										<input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email">
-									</div>
-									<div class="mb-3">
-										<label for="exampleInputPassword1" class="form-label">Password</label>
-										<input type="password" class="form-control" id="exampleInputPassword1" autocomplete="off" placeholder="Password">
-									</div>
-									<div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="exampleCheck1">
-										<label class="form-check-label" for="exampleCheck1">
-											Remember me
-										</label>
-									</div>
-									<button type="submit" class="btn btn-primary me-2">Submit</button>
-								 <button type="button" class="btn btn-secondary btn-lg px-5 py-2"
-        onclick="window.location='{{ route('dashboard') }}'">
-    Cancel
-</button>
-
-								</form>
-
-              </div>
-            </div>
-					</div>
-                </div>
-                 --}}
-
-  <div class="page-content d-flex justify-content-center align-items-center"
-     style="min-height: 100vh; background-color: #f8f9fa;">
-  <div class="card shadow-lg border-0 rounded-4 d-flex justify-content-center"
-       style="width: 700px; height: 700px;">
-    <div class="card-body p-4 overflow-auto">
-      <h3 class="card-title text-center mb-4">Plant </h3>
-
-      <form class="forms-sample"  id="js-add-form" enctype="multipart/form-data">
-        @csrf
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="fruitId" class="form-label">Grading</label>
-            <input type="text" class="form-control form-control-lg" name="grading" id="plant" placeholder="Grading">
-          </div>
-          <div class="col-md-6">
-            <label for="title" class="form-label">Title</label>
-            <input type="text" class="form-control form-control-lg" name="title" id="title" placeholder="Enter Title">
-          </div>
+<div class="page-content">
+    <div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-4">
+        <div>
+            <h4 class="mb-3 mb-md-0">Add New Plant</h4>
+            <nav class="page-breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('all_plant') }}">Plants</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Add New</li>
+                </ol>
+            </nav>
         </div>
-
-        <div class="mb-3">
-          <label for="desc" class="form-label">Description</label>
-          <textarea class="form-control form-control-lg" name="description" id="desc" rows="4" placeholder="Enter Description"></textarea>
+        <div class="d-flex align-items-center flex-wrap text-nowrap">
+            <a href="{{ route('all_plant') }}" class="btn btn-secondary btn-icon-text mb-2 mb-md-0">
+                <i class="btn-icon-prepend" data-feather="arrow-left"></i>
+                Back to Plants
+            </a>
         </div>
-
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <label for="origin" class="form-label">Age</label>
-            <input type="text" class="form-control form-control-lg" name="age" id="age" placeholder="Enter age">
-          </div>
-          <div class="col-md-6">
-            <label for="harvested_date" class="form-label">Price</label>
-            <input type="number" class="form-control form-control-lg" name="price" id="price" placeholder="Price">
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <label for="file" class="form-label">Upload File Image (jpg, png, jpeg)</label>
-          <input type="file" accept="image/*" class="form-control form-control-lg" name="image" id="image">
-        </div>
-        
-         <div class="mb-4">
-          <label for="file" class="form-label">Discount_price</label>
-          <input type="number" class="form-control form-control-lg" name="discount_price" id="discount" placeholder="Discount Price">
-        </div>
-
-        <div class="d-flex justify-content-center form-actions">
-          <button type="submit" id="submit" class="btn btn-primary btn-lg me-3 px-5 py-2">Submit</button>
-           <button type="button" class="btn btn-secondary btn-lg px-5 py-2"
-        onclick="window.location='{{ route('dashboard') }}'">
-    Cancel
-</button>
-        </div>
-      </form>
     </div>
-  </div>
+
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title mb-4">Plant Information</h6>
+                    <form class="forms-sample" id="js-add-form" enctype="multipart/form-data">
+                        @csrf
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" name="title" id="title" 
+                                       placeholder="Enter plant title" required>
+                                <small class="text-muted">Enter the name or title of the plant</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="age" class="form-label">Age</label>
+                                <input type="text" class="form-control form-control-lg" name="age" id="age" 
+                                       placeholder="Enter age">
+                                <small class="text-muted">Plant age</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="grading" class="form-label">Grading <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-lg" name="grading" id="grading" 
+                                       placeholder="Enter grading" required>
+                                <small class="text-muted">Plant grading</small>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="price" class="form-label">Price <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control form-control-lg" name="price" id="price" 
+                                       placeholder="Enter price" required>
+                                <small class="text-muted">Plant price</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="discount_price" class="form-label">Discount Price</label>
+                                <input type="number" class="form-control form-control-lg" name="discount_price" id="discount_price" 
+                                       placeholder="Enter discount price">
+                                <small class="text-muted">Discounted price (optional)</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                            <textarea class="form-control form-control-lg" name="description" id="description" 
+                                      rows="4" placeholder="Enter plant description" required></textarea>
+                            <small class="text-muted">Detailed description of the plant</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="image" class="form-label">Plant Image <span class="text-danger">*</span></label>
+                            <input type="file" accept="image/*" class="form-control form-control-lg" 
+                                   name="image" id="image" required>
+                            <small class="text-muted">Upload an image (jpg, png, jpeg). Max file size: 5MB</small>
+                            <div class="mt-3">
+                                <img id="image-preview" src="" alt="Image Preview" 
+                                     style="width:200px; height:200px; object-fit:cover; display:none; border:1px solid #ddd; padding:5px; border-radius:6px;">
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{{ route('all_plant') }}" class="btn btn-secondary btn-lg px-4">
+                                Cancel
+                            </a>
+                            <button type="submit" id="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="btn-icon-prepend" data-feather="save"></i>
+                                Add Plant
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
- @endsection
+@endsection
 
-
-
- 			    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+@section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
-    @if(session('success'))
-        toastr.success("{{ session('success') }}");
-    @endif
+// Toastr configuration
+toastr.options = {
+    "closeButton": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+    "timeOut": "3000"
+};
 
-    @if(session('error'))
-        toastr.error("{{ session('error') }}");
-    @endif
+// Show toastr messages from session
+@if(session('success'))
+    toastr.success("{{ session('success') }}");
+@endif
 
-    @if(session('info'))
-        toastr.info("{{ session('info') }}");
-    @endif
+@if(session('error'))
+    toastr.error("{{ session('error') }}");
+@endif
 
-    @if(session('warning'))
-        toastr.warning("{{ session('warning') }}");
-    @endif
-</script>
-
-<script>
-    // ✅ Toastr configuration
-    toastr.options = {
-        "closeButton": true,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "timeOut": "3000"
-    };
-    </script>
-
-
-<script>
-
-
-$(document).on('click', '#submit', function (e) {
-    e.preventDefault();
-      let $btn = $(this);
-    let originalText = $btn.text();
-
-    let form = $('#js-add-form')[0];
-    let formData = new FormData(form);
-
-    $.ajax({
-        xhr: function () {
-            var xhr = new window.XMLHttpRequest();
-            xhr.upload.addEventListener('progress', function (evt) {
-                if (evt.lengthComputable) {
-                    var percentComplete = Math.round(evt.loaded / evt.total * 100);
-                    $('#waitbox').text(percentComplete + '%');
-                }
-            }, false);
-            return xhr;
-        },
-        url: '/plant/create', // or '/fruits/store' depending on your route
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        beforeSend: function (xhr) {
-            $btn.prop('disabled', true).text('Processing...');
-            xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
-          //  toastr.info('Uploading, please wait...');
-        },
-        success: function (data) {
-            if (data.status ===true) {
-                toastr.success(data.message || '');
-                $('#js-add-form')[0].reset();
-
-                // Redirect after short delay
-                setTimeout(() => {
-                    window.location.href = '/plant/all';
-                }, 1500);
-            } else {
-                toastr.warning(data.message || 'Something went wrong.');
-            }
-        },
-        error: function (xhr) {
-            if (xhr.status === 422 && xhr.responseJSON.errors) {
-                $.each(xhr.responseJSON.errors, function (key, error) {
-                    toastr.error(error);
-                });
-            } else {
-                toastr.error(xhr.responseJSON?.message || 'Server error occurred.');
-            }
-              $btn.prop('disabled', false).text(originalText);
+// Image preview functionality
+$(document).ready(function() {
+    $('#image').on('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#image-preview').attr('src', e.target.result).show();
+            };
+            reader.readAsDataURL(file);
+        } else {
+            $('#image-preview').hide();
         }
+    });
+
+    // Form submission
+    $(document).on('submit', '#js-add-form', function(e) {
+        e.preventDefault();
+
+        let $btn = $('#submit');
+        let originalText = $btn.html();
+        let form = $('#js-add-form')[0];
+        let formData = new FormData(form);
+
+        // Basic client-side validation
+        if (!$('#title').val().trim()) {
+            toastr.error('Please enter a title');
+            return;
+        }
+        if (!$('#grading').val().trim()) {
+            toastr.error('Please enter a grading');
+            return;
+        }
+        if (!$('#price').val()) {
+            toastr.error('Please enter a price');
+            return;
+        }
+        if (!$('#description').val().trim()) {
+            toastr.error('Please enter a description');
+            return;
+        }
+        if (!$('#image')[0].files.length) {
+            toastr.error('Please select an image');
+            return;
+        }
+
+        $.ajax({
+            xhr: function() {
+                var xhr = new window.XMLHttpRequest();
+                xhr.upload.addEventListener('progress', function(evt) {
+                    if (evt.lengthComputable) {
+                        var percentComplete = Math.round((evt.loaded / evt.total) * 100);
+                        $btn.html('<i class="fa fa-spinner fa-spin"></i> Uploading ' + percentComplete + '%');
+                    }
+                }, false);
+                return xhr;
+            },
+            url: '/plant/create',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            beforeSend: function(xhr) {
+                $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+                xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
+            },
+            success: function(data) {
+                if (data.status === true || data.status === 'success') {
+                    toastr.success(data.message || 'Plant added successfully!');
+                    $('#js-add-form')[0].reset();
+                    $('#image-preview').hide();
+                    
+                    setTimeout(() => {
+                        window.location.href = '/plant/all';
+                    }, 1500);
+                } else {
+                    toastr.warning(data.message || 'Something went wrong.');
+                    $btn.prop('disabled', false).html(originalText);
+                }
+            },
+            error: function(xhr) {
+                if (xhr.status === 422 && xhr.responseJSON.errors) {
+                    $.each(xhr.responseJSON.errors, function(key, error) {
+                        if (Array.isArray(error)) {
+                            toastr.error(error[0]);
+                        } else {
+                            toastr.error(error);
+                        }
+                    });
+                } else {
+                    toastr.error(xhr.responseJSON?.message || 'Server error occurred. Please try again.');
+                }
+                $btn.prop('disabled', false).html(originalText);
+            }
+        });
     });
 });
 </script>
+@endsection

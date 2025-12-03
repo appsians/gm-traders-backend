@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 use App\Models\Order;
+use App\Models\order_items;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -129,43 +131,366 @@ public function setDeliveredDate(Request $request, $id)
 
  public function pendingorders()
     {
-        $pendingOrders = Order::where('status', 'pending')->orderBy('id', 'desc')   // or any column you want
-                     ->get();
+        return view('Admin.Orders.pending_orders');
+    }
 
-        // $completedOrders = Order::where('status', 'completed')
-        //     ->whereNotNull('delivered_date')
-        //     ->get();
-
-        // return response()->json([
-        //     'status' => true,
-        //     'message' => 'All orders fetched successfully',
-        //     'pending_orders' => $pendingOrders,
-        //     'completed_orders' => $completedOrders,
-        // ]);
-
-        return view('Admin.Orders.pending_orders' ,  ['Orders' =>  $pendingOrders]);
+    public function pendingOrdersData(Request $request)
+    {
+        return $this->ordersData($request, 'pending');
     }
 
 
 
      public function completeorders()
     {
-        $completeOrders = Order::where('status', 'completed')->orderBy('id', 'desc')   // or any column you want
-                     ->get();
+        return view('Admin.Orders.complete_orders');
+    }
 
-
-
-        return view('Admin.Orders.complete_orders' ,  ['Orders' => $completeOrders]);
+    public function completeOrdersData(Request $request)
+    {
+        return $this->ordersData($request, 'completed');
     }
 
     public function allorders()
     {
-        $allOrders = Order::orderBy('id', 'desc')   // or any column you want
-                     ->get();
+        return view('Admin.Orders.all_orders');
+    }
 
+    public function allOrdersData(Request $request)
+    {
+        return $this->ordersData($request, null);
+    }
 
+    public function getOrderCounts()
+    {
+        $total = Order::count();
+        $pending = Order::where('status', 'pending')->count();
+        $completed = Order::where('status', 'completed')->count();
+        
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'total' => $total,
+                'pending' => $pending,
+                'completed' => $completed
+            ]
+        ]);
+    }
 
-        return view('Admin.Orders.all_orders' ,  ['Orders' => $allOrders]);
+    public function searchCustomers(Request $request)
+    {
+        $query = $request->get('q', '');
+        
+        if (strlen($query) < 2) {
+            return response()->json([
+                'status' => true,
+                'data' => []
+            ]);
+        }
+
+        $customers = Order::select('name', 'order_id')
+            ->where(function($q) use ($query) {
+                $q->where('name', 'like', '%' . $query . '%')
+                  ->orWhere('order_id', 'like', '%' . $query . '%');
+            })
+            ->groupBy('name', 'order_id')
+            ->limit(10)
+            ->get()
+            ->map(function($order) {
+                return [
+                    'id' => $order->order_id,
+                    'text' => $order->name . ' (' . $order->order_id . ')',
+                    'name' => $order->name,
+                    'order_id' => $order->order_id
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'data' => $customers
+        ]);
+    }
+
+    public function searchProducts(Request $request)
+    {
+        $query = $request->get('q', '');
+        
+        if (strlen($query) < 2) {
+            return response()->json([
+                'status' => true,
+                'data' => []
+            ]);
+        }
+
+        $products = order_items::select('product_id', 'variety')
+            ->where(function($q) use ($query) {
+                $q->where('product_id', 'like', '%' . $query . '%')
+                  ->orWhere('variety', 'like', '%' . $query . '%');
+            })
+            ->groupBy('product_id', 'variety')
+            ->limit(10)
+            ->get()
+            ->map(function($item) {
+                $display = $item->product_id;
+                if ($item->variety) {
+                    $display .= ' - ' . $item->variety;
+                }
+                return [
+                    'id' => $item->product_id,
+                    'text' => $display,
+                    'product_id' => $item->product_id,
+                    'variety' => $item->variety
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'data' => $products
+        ]);
+    }
+
+    public function getOrderDetail($id)
+    {
+        $order = Order::with(['orderitems', 'billing'])->find($id);
+        
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+
+        $rawOrder = $order->getAttributes();
+        
+        return response()->json([
+            'status' => true,
+            'data' => [
+                'id' => $order->id,
+                'order_id' => $rawOrder['order_id'] ?? '-',
+                'name' => $rawOrder['name'] ?? '-',
+                'location' => $rawOrder['location'] ?? '-',
+                'placed_date' => isset($rawOrder['placed_date']) && $rawOrder['placed_date'] ? Carbon::parse($rawOrder['placed_date'])->format('Y-m-d') : null,
+                'deliver_date' => isset($rawOrder['deliver_date']) && $rawOrder['deliver_date'] ? Carbon::parse($rawOrder['deliver_date'])->format('Y-m-d') : null,
+                'delivered_date' => isset($rawOrder['delivered_date']) && $rawOrder['delivered_date'] ? Carbon::parse($rawOrder['delivered_date'])->format('Y-m-d') : null,
+                'placed_date_formatted' => isset($rawOrder['placed_date']) && $rawOrder['placed_date'] ? Carbon::parse($rawOrder['placed_date'])->format('M j, Y') : '-',
+                'deliver_date_formatted' => isset($rawOrder['deliver_date']) && $rawOrder['deliver_date'] ? Carbon::parse($rawOrder['deliver_date'])->format('M j, Y') : '-',
+                'delivered_date_formatted' => isset($rawOrder['delivered_date']) && $rawOrder['delivered_date'] ? Carbon::parse($rawOrder['delivered_date'])->format('M j, Y') : '-',
+                'amount_paid' => $rawOrder['amount_paid'] ?? 0,
+                'amount_remaining' => $rawOrder['amount_remaining'] ?? 0,
+                'status' => $rawOrder['status'] ?? 'pending',
+                'subtotal' => $rawOrder['subtotal'] ?? 0,
+                'delivery_fee' => $rawOrder['delivery_fee'] ?? 0,
+                'total_amount' => $rawOrder['total_amount'] ?? 0,
+                'items' => $order->orderitems->map(function($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_id' => $item->product_id ?? 'N/A',
+                        'variety' => $item->variety ?? 'N/A',
+                        'quality' => $item->quality ?? 'N/A',
+                        'price' => $item->price ?? 0,
+                        'quantity' => $item->quantity ?? 0,
+                        'total_price' => $item->total_price ?? 0,
+                    ];
+                }),
+                'billing' => $order->billing ? [
+                    'full_name' => $order->billing->full_name ?? '',
+                    'phone' => $order->billing->phone ?? '',
+                    'address' => $order->billing->address ?? '',
+                    'city' => $order->billing->city ?? '',
+                    'state' => $order->billing->state ?? '',
+                ] : null
+            ]
+        ]);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,completed,cancelled'
+        ]);
+
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+
+        // Explicitly set status as string to avoid SQL issues
+        $order->status = (string) $request->status;
+        $order->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order status updated successfully',
+            'data' => $order
+        ]);
+    }
+
+    public function cancelOrder($id)
+    {
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+
+        // Explicitly set status as string to avoid SQL issues
+        $order->status = (string) 'cancelled';
+        $order->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order cancelled successfully',
+            'data' => $order
+        ]);
+    }
+
+    public function updateDeliveryDate(Request $request, $id)
+    {
+        $request->validate([
+            'deliver_date' => 'nullable|date',
+        ]);
+
+        $order = Order::find($id);
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found'
+            ], 404);
+        }
+
+        if ($request->has('deliver_date')) {
+            $order->deliver_date = $request->deliver_date;
+        }
+        $order->save();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Delivery date updated successfully',
+            'data' => $order
+        ]);
+    }
+
+    private function ordersData(Request $request, $status = null)
+    {
+        $draw = $request->get('draw');
+        $start = $request->get("start");
+        $rowperpage = $request->get("length");
+
+        $columnIndex_arr = $request->get('order');
+        $columnName_arr = $request->get('columns');
+        $order_arr = $request->get('order');
+        $search_arr = $request->get('search');
+
+        $columnIndex = isset($columnIndex_arr[0]['column']) ? $columnIndex_arr[0]['column'] : 0;
+        $columnName = isset($columnName_arr[$columnIndex]['data']) ? $columnName_arr[$columnIndex]['data'] : 'id';
+        $columnSortOrder = isset($order_arr[0]['dir']) ? $order_arr[0]['dir'] : 'desc';
+        $searchValue = isset($search_arr['value']) ? $search_arr['value'] : '';
+
+        $columnMap = [
+            'id' => 'id',
+            'order_id' => 'order_id',
+            'name' => 'name',
+            'status' => 'status',
+            'placed_date' => 'placed_date',
+            'deliver_date' => 'deliver_date',
+        ];
+
+        $dbColumnName = $columnMap[$columnName] ?? 'id';
+
+        $query = Order::query();
+        
+        // Status filter (from card click or existing filter)
+        if ($status) {
+            $query->where('status', $status);
+        } else {
+            // Check for status filter in request
+            $statusFilter = $request->get('status_filter');
+            if ($statusFilter && in_array($statusFilter, ['pending', 'completed', 'cancelled'])) {
+                $query->where('status', $statusFilter);
+            }
+        }
+
+        // Date range filter
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+        if ($dateFrom) {
+            $query->whereDate('placed_date', '>=', Carbon::parse($dateFrom)->format('Y-m-d'));
+        }
+        if ($dateTo) {
+            $query->whereDate('placed_date', '<=', Carbon::parse($dateTo)->format('Y-m-d'));
+        }
+
+        // Customer search filter
+        $customerSearch = $request->get('customer_search');
+        if ($customerSearch) {
+            $query->where(function($q) use ($customerSearch) {
+                $q->where('name', 'like', '%' . $customerSearch . '%')
+                  ->orWhere('order_id', 'like', '%' . $customerSearch . '%');
+            });
+        }
+
+        // Product search filter
+        $productSearch = $request->get('product_search');
+        if ($productSearch) {
+            $query->whereHas('orderitems', function($q) use ($productSearch) {
+                $q->where('product_id', 'like', '%' . $productSearch . '%')
+                  ->orWhere('variety', 'like', '%' . $productSearch . '%');
+            });
+        }
+
+        // General search
+        if ($searchValue != '') {
+            $query->where(function($q) use ($searchValue) {
+                $q->where('order_id', 'like', '%' . $searchValue . '%')
+                  ->orWhere('name', 'like', '%' . $searchValue . '%')
+                  ->orWhere('location', 'like', '%' . $searchValue . '%')
+                  ->orWhere('status', 'like', '%' . $searchValue . '%');
+            });
+        }
+
+        $totalRecords = $status ? Order::where('status', $status)->count() : Order::count();
+        $totalRecordswithFilter = $query->count();
+
+        $query->orderBy($dbColumnName, $columnSortOrder);
+        $orders = $query->skip($start)->take($rowperpage)->get();
+
+        $data_arr = [];
+        foreach ($orders as $order) {
+            $rawOrder = $order->getAttributes();
+            $data_arr[] = [
+                'id' => $order->id,
+                'order_id' => $rawOrder['order_id'] ?? '-',
+                'name' => $rawOrder['name'] ?? '-',
+                'location' => $rawOrder['location'] ?? '-',
+                'placed_date' => isset($rawOrder['placed_date']) && $rawOrder['placed_date'] ? Carbon::parse($rawOrder['placed_date'])->format('m/d/Y') : '-',
+                'deliver_date' => isset($rawOrder['deliver_date']) && $rawOrder['deliver_date'] ? Carbon::parse($rawOrder['deliver_date'])->format('m/d/Y') : null,
+                'delivered_date' => isset($rawOrder['delivered_date']) && $rawOrder['delivered_date'] ? Carbon::parse($rawOrder['delivered_date'])->format('m/d/Y') : null,
+                'amount_paid' => $rawOrder['amount_paid'] ?? 0,
+                'amount_remaining' => $rawOrder['amount_remaining'] ?? 0,
+                'status' => $rawOrder['status'] ?? '-',
+                'subtotal' => $rawOrder['subtotal'] ?? 0,
+                'delivery_fee' => $rawOrder['delivery_fee'] ?? 0,
+                'total_amount' => $rawOrder['total_amount'] ?? 0,
+                'is_verify' => $rawOrder['is_verify'] ?? 0,
+            ];
+        }
+
+        $response = [
+            "draw" => intval($draw),
+            "iTotalRecords" => $totalRecords,
+            "iTotalDisplayRecords" => $totalRecordswithFilter,
+            "aaData" => $data_arr
+        ];
+
+        return response()->json($response);
     }
     
     

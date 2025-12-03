@@ -1,185 +1,137 @@
-<style>
-
-.table-responsive {
-    -webkit-overflow-scrolling: touch;
-    overflow-x: auto !important;
-}
-div.table-responsive>div.dataTables_wrapper>div.row>div[class^=col-]:first-child {
-  
-    overflow-x: auto;
-    
-}
-    
-   table th, .datepicker table th, .table td, .datepicker table td {
-    text-align: center;
-    white-space: nowrap;
-}
-</style>
-
- @extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
+<style>
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        overflow-x: auto !important;
+    }
 
+    table th, table td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
 
-  <div class="row">
-					<div class="col-md-12 grid-margin stretch-card">
-						<div class="card">
-							<div class="card-body">
-							    
-							       <h6 style="
-    font-size: 20px; 
-    
-    font-weight: bold; 
-   
-    padding:10px 15px;
-    border-radius:6px;
-    margin-top:50px;
-    color:#2c3e50;
-">
-    Grading
-</h6>
-								<h6 class="card-title"></h6>
-								<p class="text-muted mb-3"> <code></code></p>
-								<div class="table-responsive pt-3">
-									<table  id="dataTableExample" class="table">
-									    @php
-    $reservations = $varieties->where('type', 'reservation');
-    $kanals       = $varieties->where('type', 'kanal');
-@endphp
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+</style>
 
-										<thead>
+<div class="page-content">
+    <div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-4">
+        <div>
+            <h4 class="mb-3 mb-md-0">Plant Reservation (Grading)</h4>
+            <nav class="page-breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Grading</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
 
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title mb-4">All Plant Reservations</h6>
+                    <div class="table-responsive">
+                        <table id="gradingTable" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Variety</th>
+                                    <th>Feather</th>
+                                    <th>Price</th>
+                                    <th>Created Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
 
-											<tr>
-												<th>#</th>
-												<th>Variety</th>
-													<th>image</th>
-												<th>Type</th>
-												<th>Feather</th>
-												<th>Price</th>
-                                                <th>Action</th>
-											</tr>
-
-										</thead>
-										<tbody>
-										    @php $i = 1; @endphp
-
-                                             @foreach($reservations as $variety)
-
-                                             @foreach($variety->feathers as $feather)
-											<tr>
-											     <td>{{ $i++ }}</td>
-
-												<td>{{$variety->name}}</td>
-													  <td><img src="{{ asset($variety->image) }}" alt="Image" width="50" height="50"
-     style="object-fit: cover; border-radius: 50%;"></td>
-												<td>
-
-
-                                                    {{$variety->type}}
-												</td>
-												<td>{{$feather->feather}}</td>
-												<td>{{$feather->price}}</td>
-                                                <td>
-
-                                                 <!--<button class="btn btn-sm btn-primary edit-btn" data-id="">-->
-                                                 <!--   <i class="fa fa-edit"></i> Edit-->
-                                                 <!--     </button>-->
-
-                                                  <button class="btn btn-sm btn-danger delete-btn" data-id="{{$feather->id}}"   data-type="{{ $variety->type }}">
-                                                      <i class="fa fa-trash"></i> Delete
-                                                  </button>
-                                                </td>
-
-											</tr>
-                                              @endforeach
-                                              @endforeach
-
-
-
-                                            @foreach($kanals as $variety)
-                                            @foreach($variety->kanals as $kanal)
-											<tr>
-															  <td>{{ $i++ }}</td>
-												<td>{{$variety->name}}</td>
-													  <td><img src="{{ asset($variety->image) }}" alt="Image" width="50" height="50"
-     style="object-fit: cover; border-radius: 50%;"></td>
-												<td>
-													{{-- <div class="progress">
-														<div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-													</div> --}}
-
-                                                    {{$variety->type}}
-												</td>
-												<td>{{$kanal->feather}}</td>
-												<td>{{$kanal->price}}</td>
-                                                <td>
-
-                                                 <!--<button class="btn btn-sm btn-primary edit-btn" data-id="">-->
-                                                 <!--   <i class="fa fa-edit"></i> Edit-->
-                                                 <!--     </button>-->
-
-                                                  <button class="btn btn-sm btn-danger delete-btn" data-id="{{$kanal->id}}"  data-type="{{ $variety->type }}">
-                                                      <i class="fa fa-trash"></i> Delete
-                                                  </button>
-                                                </td>
-
-											</tr>
-                                              @endforeach
-                                                @endforeach
-
-
-
-
-
-										</tbody>
-									</table>
-								</div>
-
-							</div>
-						</div>
-					</div>
-				</div>
-
-
-
-
-{{-- --}}
- @endsection
- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
- <script>
-
-
-$(document).on('click', '.delete-btn', function (e) {
-    e.preventDefault();
-
-    let id = $(this).data('id');
-    let type = $(this).data('type');
-
-    if (!confirm('Are you sure you want to delete this feather?')) return;
-
-    $.ajax({
-        url: '/feather/delete/' + id,
-        type: 'DELETE',
-        data: { type: type }, // send type with request
-        beforeSend: function (xhr) {
-            xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
+@section('scripts')
+<script src="{{ asset('assets/vendors/datatables.net/jquery.dataTables.js') }}"></script>
+<script src="{{ asset('assets/vendors/datatables.net-bs5/dataTables.bootstrap5.js') }}"></script>
+<script>
+$(document).ready(function() {
+    var table = $('#gradingTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('grading.data') }}",
+            type: "GET",
         },
-        success: function (data) {
-            if (data.status === 'success') {
-                toastr.success(data.message || 'Feather deleted successfully!');
-                $('button[data-id="' + id + '"]').closest('tr').remove();
-                setTimeout(() => window.location.reload(), 500);
-            } else {
-                toastr.warning(data.message || 'Something went wrong.');
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'variety', name: 'variety' },
+            { data: 'feather', name: 'feather' },
+            { data: 'price', name: 'price' },
+            { data: 'created_at', name: 'created_at' },
+            { 
+                data: 'id', 
+                name: 'actions',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    return '<div class="action-buttons">' +
+                           '<button class="btn btn-sm btn-danger delete-btn" data-id="' + row.id + '" title="Delete">' +
+                           '<i class="fa fa-trash"></i>' +
+                           '</button>' +
+                           '</div>';
+                }
             }
-        },
-        error: function (xhr) {
-            toastr.error(xhr.responseJSON?.message || 'Server error occurred.');
+        ],
+        order: [[0, 'desc']],
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        language: {
+            processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+            emptyTable: "No reservations found",
+            zeroRecords: "No matching reservations found"
         }
     });
+
+    // Delete button click handler
+    $(document).on('click', '.delete-btn', function(e) {
+        e.preventDefault();
+        
+        var id = $(this).data('id');
+        
+        if (!confirm('Are you sure you want to delete this reservation? This action cannot be undone.')) {
+            return;
+        }
+        
+        $.ajax({
+            url: '/feather/delete/' + id,
+            type: 'DELETE',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
+            },
+            success: function(data) {
+                if (data.status === true || data.status === 'success') {
+                    toastr.success(data.message || 'Reservation deleted successfully!');
+                    table.ajax.reload(null, false);
+                } else {
+                    toastr.warning(data.message || 'Something went wrong.');
+                }
+            },
+            error: function(xhr) {
+                toastr.error(xhr.responseJSON?.message || 'Server error occurred.');
+            }
+        });
+    });
 });
-
 </script>
-
+@endsection

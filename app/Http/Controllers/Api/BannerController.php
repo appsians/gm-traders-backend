@@ -33,12 +33,71 @@ public function banner(Request $request)
 
 public function all_banner(Request $request)
 {
+    return view('Admin.Banners.datatable');
+}
 
-   // $banners= Homescreen_banner::all();
-        $banners = Homescreen_banner::all();
+public function bannersData(Request $request)
+{
+    $draw = $request->get('draw');
+    $start = $request->get("start");
+    $rowperpage = $request->get("length");
 
-    return view('Admin.Banners.datatable' ,compact('banners'));
+    $columnIndex_arr = $request->get('order');
+    $columnName_arr = $request->get('columns');
+    $order_arr = $request->get('order');
+    $search_arr = $request->get('search');
 
+    $columnIndex = isset($columnIndex_arr[0]['column']) ? $columnIndex_arr[0]['column'] : 0;
+    $columnName = isset($columnName_arr[$columnIndex]['data']) ? $columnName_arr[$columnIndex]['data'] : 'id';
+    $columnSortOrder = isset($order_arr[0]['dir']) ? $order_arr[0]['dir'] : 'desc';
+    $searchValue = isset($search_arr['value']) ? $search_arr['value'] : '';
+
+    // Map DataTable column names to database column names
+    $columnMap = [
+        'id' => 'id',
+        'topic' => 'topic',
+        'sub_topic' => 'sub_topic',
+    ];
+
+    $dbColumnName = $columnMap[$columnName] ?? 'id';
+
+    $query = Homescreen_banner::query();
+
+    // Search functionality
+    if ($searchValue != '') {
+        $query->where(function($q) use ($searchValue) {
+            $q->where('topic', 'like', '%' . $searchValue . '%')
+              ->orWhere('sub_topic', 'like', '%' . $searchValue . '%');
+        });
+    }
+
+    $totalRecords = Homescreen_banner::count();
+    $totalRecordswithFilter = $query->count();
+
+    // Sorting
+    $query->orderBy($dbColumnName, $columnSortOrder);
+
+    // Pagination
+    $banners = $query->skip($start)->take($rowperpage)->get();
+
+    $data_arr = [];
+    foreach ($banners as $index => $banner) {
+        $data_arr[] = [
+            'id' => $banner->id,
+            'topic' => $banner->topic ?? '-',
+            'sub_topic' => $banner->sub_topic ?? '-',
+            'icon' => $banner->icon,
+        ];
+    }
+
+    $response = [
+        "draw" => intval($draw),
+        "iTotalRecords" => $totalRecords,
+        "iTotalDisplayRecords" => $totalRecordswithFilter,
+        "aaData" => $data_arr
+    ];
+
+    return response()->json($response);
 }
 
 

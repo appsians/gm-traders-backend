@@ -12,6 +12,6 @@ class Fruit extends Model
         'title',
         'image',
         'harvested_date',
-
+        'qr_code',
      ];
 }

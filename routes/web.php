@@ -75,6 +75,7 @@ Route::get('/send-message', function () {
       Route::prefix('fruits')->group(function () {
       Route::get('/add', [AdminController::class, 'fruits'])->name('add_fruits');
        Route::get('/all', [AdminController::class, 'all'])->name('all_fruits');
+       Route::get('/data', [AdminController::class, 'fruitsData'])->name('fruits.data');
       Route::post('/create', [ProductController::class, 'fruitstore'])->name('create_fruit');
       Route::get('/edit/{id}', [ProductController::class, 'showfruits'])->name('edit_fruit');
       Route::post('/update', [ProductController::class, 'updatefruit'])->name('fruits.update');
@@ -88,6 +89,7 @@ Route::get('/send-message', function () {
       Route::prefix('banner')->group(function () {
       Route::get('/add', [BannerController::class, 'banner'])->name('add_banner');
        Route::get('/all', [BannerController::class, 'all_banner'])->name('all_banner');
+       Route::get('/data', [BannerController::class, 'bannersData'])->name('banners.data');
       Route::post('/create', [BannerController::class, 'store'])->name('create_banner');
       Route::get('/edit/{id}', [BannerController::class, 'edit'])->name('edit_banner');
       Route::post('/update', [BannerController::class, 'update'])->name('update');
@@ -99,6 +101,7 @@ Route::get('/send-message', function () {
       Route::prefix('plant')->group(function () {
       Route::get('/add', [AdminController::class, 'plant'])->name('add_plant');
        Route::get('/all', [ProductController::class, 'index'])->name('all_plant');
+       Route::get('/data', [ProductController::class, 'plantsData'])->name('plants.data');
       Route::post('/create', [ProductController::class, 'store'])->name('create_plant');
       Route::get('/edit/{id}', [ProductController::class, 'show'])->name('edit_plant');
       Route::post('/update', [ProductController::class, 'update'])->name('plant.update');
@@ -120,7 +123,8 @@ Route::get('/send-message', function () {
 Route::get('plant/reservation', [PlantreservationController::class, 'create'])->name('admin.reservation');;
 Route::post('plant/reservation/store', [PlantreservationController::class, 'store']);
 
-Route::get('/reservation/all', [PlantreservationController::class, 'getAllFeathers'])->name('plant.reservation.all');
+Route::get('/reservation/all', [AdminController::class, 'getallreservation'])->name('plant.reservation.all');
+Route::get('/reservation/data', [AdminController::class, 'gradingData'])->name('grading.data');
 Route::delete('/feather/delete/{id}', [PlantreservationController::class, 'destroy'])->name('reservation.delete');
 
 
@@ -202,20 +206,36 @@ Route::post('/orders/set-delivered-date/{id}', [OrderController::class, 'setDeli
 
       Route::prefix('Order')->group(function () {
        Route::get('/all', [OrderController::class, 'allorders'])->name('all_Order');
+       Route::get('/all/data', [OrderController::class, 'allOrdersData'])->name('all_orders.data');
+       Route::get('/counts', [OrderController::class, 'getOrderCounts'])->name('orders.counts');
+       Route::get('/detail/{id}', [OrderController::class, 'getOrderDetail'])->name('order.detail.json');
+       Route::get('/search/customers', [OrderController::class, 'searchCustomers'])->name('orders.search.customers');
+       Route::get('/search/products', [OrderController::class, 'searchProducts'])->name('orders.search.products');
       Route::post('/confirm/{orderId}', [OrderController::class, 'confirmorder'])->name('confirm_order');
+      Route::post('/cancel/{id}', [OrderController::class, 'cancelOrder'])->name('order.cancel');
+      Route::post('/update-status/{id}', [OrderController::class, 'updateStatus'])->name('order.update_status');
+      Route::post('/update-delivery-date/{id}', [OrderController::class, 'updateDeliveryDate'])->name('order.update_delivery_date');
       Route::get('/pending', [OrderController::class, 'pendingorders'])->name('pendingorder');
+      Route::get('/pending/data', [OrderController::class, 'pendingOrdersData'])->name('pending_orders.data');
       Route::get('/complete', [OrderController::class, 'completeorders'])->name('complete_order');
+      Route::get('/complete/data', [OrderController::class, 'completeOrdersData'])->name('complete_orders.data');
        Route::delete('delete/{id}', [OrderController::class, 'destroy']);
 
 });
 
 
- Route::get('/admin/consultancy', [ConsultancyController::class, 'consultrecord']);
+Route::get('/dashboard/orders-chart-data', [AdminController::class, 'getOrdersChartData'])->name('dashboard.orders.chart.data');
+
+Route::get('/admin/consultancy', [ConsultancyController::class, 'consultrecord'])->name('admin.consultancy');
+Route::get('/admin/consultancy/data', [ConsultancyController::class, 'consultanciesData'])->name('consultancies.data');
+ Route::get('/admin/chat/user/{userId}/orders', [ChatController::class, 'getUserOrders'])->name('chat.user.orders');
+ Route::get('/admin/chat/user/{userId}/consultancy', [ChatController::class, 'getUserConsultancy'])->name('chat.user.consultancy');
  
     Route::prefix('trills')->group(function () {
       Route::get('/add', [AdminController::class, 'trills'])->name('index');
      Route::post('/store', [Trills_MaterialController::class, 'store']);
      Route::get('/all', [Trills_MaterialController::class, 'index']);
+     Route::get('/data', [Trills_MaterialController::class, 'trillsData'])->name('trills.data');
   Route::get('/edit/{id}', [Trills_MaterialController::class, 'show']);
    Route::post('update', [Trills_MaterialController::class, 'update']);
    Route::delete('delete/{id}', [Trills_MaterialController::class, 'destroy']);
@@ -243,6 +263,7 @@ Route::get('/run-delete-orders', function () {
 });
 
  Route::get('/billing', [AdminController::class, 'billing'])->name('billing.show');
+ Route::get('/billing/data', [AdminController::class, 'billingData'])->name('billing.data');
  
  
  //qrcode on admin side 

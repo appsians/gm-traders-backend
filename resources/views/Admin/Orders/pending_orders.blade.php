@@ -1,167 +1,178 @@
-<style>
-.table-responsive {
-    -webkit-overflow-scrolling: touch;
-    overflow-x: auto !important;
-}
-div.table-responsive>div.dataTables_wrapper>div.row>div[class^=col-]:first-child {
-  
-    overflow-x: auto;
-    
-}
-
-
-table th, .datepicker table th, .table td, .datepicker table td {
-    text-align: center;
-    white-space: nowrap;
-}
-</style>
 @extends('layouts.app')
 
 @section('content')
+<style>
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+        overflow-x: auto !important;
+    }
 
+    table th, table td {
+        white-space: nowrap;
+        vertical-align: middle;
+    }
 
+    .action-buttons {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+</style>
 
-<div class="row">
-                <div class="col-md-12 grid-margin stretch-card">
-                    <div class="card">
-                        <div class="card-body">
-                            
-                                 <h6 style="
-    font-size: 20px; 
-    
-    font-weight: bold; 
-   
-    padding:10px 15px;
-    border-radius:6px;
-    margin-top:50px;
-    color:#2c3e50;
-">
-    Pending Orders
-</h6>
-                            <h6 class="card-title"></h6>
-                            <p class="text-muted mb-3"> <code></code></p>
-                            <div class="table-responsive pt-3">
-                                <table  id="dataTableExample" class="table">
-                                    <thead>
+<div class="page-content">
+    <div class="d-flex justify-content-between align-items-center flex-wrap grid-margin mb-4">
+        <div>
+            <h4 class="mb-3 mb-md-0">Pending Orders</h4>
+            <nav class="page-breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Pending Orders</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
 
-
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Order_id</th>
-                                            <th>Name</th>
-                                            <th>Location</th>
-                                            <th>Place_Date</th>
-                                         
-                                            <th>Amount</th>
-                                            <th>Remaning</th>
-                                            <th>Status</th>
-                                         
-                                        </tr>
-
-                                    </thead>
-                                    <tbody>
-                                            @foreach($Orders as $order)
-                                        <tr>
-                                            	<td>{{ $loop->iteration }}</td>
-                                            <td>{{$order->order_id}}</td>
-                                            <td>
-
-
-                                                {{$order->name}}
-                                            </td>
-                                            <td>{{$order->location}}</td>
-                                            <td>{{$order->placed_date}}</td>
-                                         
-                                            <td>{{$order->amount_paid}}</td>
-                                            <td>{{$order->amount_remaining}}</td>
-                                            
-                                                <td>{{$order->status}}</td>
-
-
-
-                                        </tr>
-                                        @endforeach
-                                        {{-- <tr>
-                                            <td>2</td>
-                                            <td>Haley Kennedy</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: 75%" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </td>
-                                            <td>$313,500</td>
-                                            <td>May 15, 2022</td>
-                                        </tr>
-                                        <tr>
-                                            <td>3</td>
-                                            <td>Bradley Greer</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: 90%" aria-valuenow="90" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </td>
-                                            <td>$132,000</td>
-                                            <td>Apr 12, 2022</td>
-                                        </tr>
-                                        <tr>
-                                            <td>4</td>
-                                            <td>Brenden Wagner</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 50%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </td>
-                                            <td>$206,850</td>
-                                            <td>June 21, 2022</td>
-                                        </tr>
-                                        <tr>
-                                            <td>5</td>
-                                            <td>Bruno Nash</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: 35%" aria-valuenow="35" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </td>
-                                            <td>$163,500</td>
-                                            <td>January 01, 2022</td>
-                                        </tr>
-                                        <tr>
-                                            <td>6</td>
-                                            <td>Sonya Frost</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width: 65%" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </td>
-                                            <td>$103,600</td>
-                                            <td>July 18, 2022</td>
-                                        </tr>
-                                        <tr>
-                                            <td>7</td>
-                                            <td>Zenaida Frank</td>
-                                            <td>
-                                                <div class="progress">
-                                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                                                </div>
-                                            </td>
-                                            <td>$313,500</td>
-                                            <td>March 22, 2022</td>
-                                        </tr> --}}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                        </div>
+    <div class="row">
+        <div class="col-md-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title mb-4">Pending Orders</h6>
+                    <div class="table-responsive">
+                        <table id="pendingOrdersTable" class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Order ID</th>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                    <th>Placed Date</th>
+                                    <th>Amount Paid</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be loaded via AJAX -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+@endsection
 
+@section('scripts')
+<script src="{{ asset('assets/vendors/datatables.net/jquery.dataTables.js') }}"></script>
+<script src="{{ asset('assets/vendors/datatables.net-bs5/dataTables.bootstrap5.js') }}"></script>
+<script>
+$(document).ready(function() {
+    var table = $('#pendingOrdersTable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('pending_orders.data') }}",
+            type: "GET",
+        },
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'order_id', name: 'order_id' },
+            { data: 'name', name: 'name' },
+            { data: 'location', name: 'location' },
+            { data: 'placed_date', name: 'placed_date' },
+            { 
+                data: 'amount_paid', 
+                name: 'amount_paid',
+                render: function(data) {
+                    return '₹' + parseFloat(data || 0).toLocaleString('en-IN');
+                }
+            },
+            { 
+                data: 'id', 
+                name: 'actions',
+                orderable: false,
+                searchable: false,
+                render: function(data, type, row) {
+                    return '<div class="action-buttons">' +
+                           '<button class="btn btn-sm btn-success confirm-btn" data-id="' + row.id + '" title="Confirm Order">' +
+                           '<i class="fa fa-check"></i> Confirm' +
+                           '</button>' +
+                           '<a href="/order/detail/' + row.id + '" class="btn btn-sm btn-info" title="View Details">' +
+                           '<i class="fa fa-eye"></i>' +
+                           '</a>' +
+                           '<button class="btn btn-sm btn-danger delete-btn" data-id="' + row.id + '" title="Delete">' +
+                           '<i class="fa fa-trash"></i>' +
+                           '</button>' +
+                           '</div>';
+                }
+            }
+        ],
+        order: [[0, 'desc']],
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        language: {
+            processing: '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+            emptyTable: "No pending orders found",
+            zeroRecords: "No matching pending orders found"
+        }
+    });
 
+    // Confirm order button
+    $(document).on('click', '.confirm-btn', function() {
+        var id = $(this).data('id');
+        
+        if (!confirm('Are you sure you want to confirm this order?')) {
+            return;
+        }
+        
+        $.ajax({
+            url: '/Order/confirm/' + id,
+            type: 'POST',
+            headers: { 
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') 
+            },
+            success: function(data) {
+                if (data.status === true) {
+                    toastr.success('Order confirmed successfully!');
+                    table.ajax.reload(null, false);
+                } else {
+                    toastr.error(data.message || 'Failed to confirm order.');
+                }
+            },
+            error: function(xhr) {
+                toastr.error(xhr.responseJSON?.message || 'Server error occurred.');
+            }
+        });
+    });
 
-
-
-            <!-- Edit Modal -->
-
-    @endsection
-
-
+    // Delete button
+    $(document).on('click', '.delete-btn', function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        
+        if (!confirm('Are you sure you want to delete this order?')) {
+            return;
+        }
+        
+        $.ajax({
+            url: '/Order/delete/' + id,
+            type: 'DELETE',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
+            },
+            success: function(data) {
+                if (data.status === true) {
+                    toastr.success(data.message || 'Order deleted successfully!');
+                    table.ajax.reload(null, false);
+                } else {
+                    toastr.warning(data.message || 'Something went wrong.');
+                }
+            },
+            error: function(xhr) {
+                toastr.error(xhr.responseJSON?.message || 'Server error occurred.');
+            }
+        });
+    });
+});
+</script>
+@endsection

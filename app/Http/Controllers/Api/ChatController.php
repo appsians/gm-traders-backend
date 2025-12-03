@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\User;
+use App\Models\Order;
 use App\Events\MessageSent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,21 +76,32 @@ class ChatController extends Controller
 }
 
 
- public function receive($userId)
+ public function receive($userId, Request $request)
 {
-    $messages = chat::where(function ($query) use ($userId) {
+    $lastMessageId = $request->get('last_message_id');
+    
+    $query = chat::where(function ($query) use ($userId) {
         $query->where('sender_id', Auth::id())
               ->where('receiver_id', $userId);
     })->orWhere(function ($query) use ($userId) {
         $query->where('sender_id', $userId)
               ->where('receiver_id', Auth::id());
-    })->orderBy('created_at', 'asc')
+    });
+    
+    // If last_message_id is provided, only get messages after that
+    if ($lastMessageId) {
+        $query->where('id', '>', $lastMessageId);
+    }
+    
+    $messages = $query->orderBy('created_at', 'asc')
       ->get()
       ->map(function ($msg) {
           return [
+              'id' => $msg->id,
               'sender_id' => $msg->sender_id,
               'message' => $msg->message,
               'time' => $msg->created_at->diffForHumans(),
+              'created_at' => $msg->created_at->toDateTimeString(),
           ];
       });
 
@@ -210,6 +222,76 @@ public function index()
     return view('Admin.chat.index', compact('chatUsers'));
 }
 
+public function getUserOrders($userId)
+{
+    $orders = Order::with(['orderitems', 'billing'])
+        ->where('user_id', $userId)
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function($order) {
+            $rawOrder = $order->getAttributes();
+            return [
+                'id' => $order->id,
+                'order_id' => $rawOrder['order_id'] ?? '-',
+                'name' => $rawOrder['name'] ?? '-',
+                'location' => $rawOrder['location'] ?? '-',
+                'status' => $rawOrder['status'] ?? 'pending',
+                'amount_paid' => $rawOrder['amount_paid'] ?? 0,
+                'amount_remaining' => $rawOrder['amount_remaining'] ?? 0,
+                'subtotal' => $rawOrder['subtotal'] ?? 0,
+                'delivery_fee' => $rawOrder['delivery_fee'] ?? 0,
+                'total_amount' => $rawOrder['total_amount'] ?? 0,
+                'placed_date' => $rawOrder['placed_date'] ? \Carbon\Carbon::parse($rawOrder['placed_date'])->format('M j, Y') : '-',
+                'placed_date_raw' => $rawOrder['placed_date'] ? \Carbon\Carbon::parse($rawOrder['placed_date'])->format('Y-m-d') : null,
+                'deliver_date' => $rawOrder['deliver_date'] ? \Carbon\Carbon::parse($rawOrder['deliver_date'])->format('M j, Y') : null,
+                'deliver_date_raw' => $rawOrder['deliver_date'] ? \Carbon\Carbon::parse($rawOrder['deliver_date'])->format('Y-m-d') : null,
+                'delivered_date' => $rawOrder['delivered_date'] ? \Carbon\Carbon::parse($rawOrder['delivered_date'])->format('M j, Y') : null,
+                'items' => $order->orderitems->map(function($item) {
+                    return [
+                        'id' => $item->id,
+                        'product_id' => $item->product_id ?? 'N/A',
+                        'variety' => $item->variety ?? 'N/A',
+                        'quality' => $item->quality ?? 'N/A',
+                        'price' => $item->price ?? 0,
+                        'quantity' => $item->quantity ?? 0,
+                        'total_price' => $item->total_price ?? 0,
+                    ];
+                }),
+                'billing' => $order->billing ? [
+                    'full_name' => $order->billing->full_name ?? '',
+                    'phone' => $order->billing->phone ?? '',
+                    'address' => $order->billing->address ?? '',
+                    'city' => $order->billing->city ?? '',
+                    'state' => $order->billing->state ?? '',
+                ] : null
+            ];
+        });
+
+    return response()->json([
+        'status' => true,
+        'data' => $orders
+    ]);
+}
+
+public function getUserConsultancy($userId)
+{
+    $consultancies = \App\Models\UserConsult::where('user_id', $userId)
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function($consult) {
+            return [
+                'id' => $consult->id,
+                'consultancy' => $consult->consultancy ?? '-',
+                'sub_consultancy' => $consult->sub_consultancy ?? '-',
+                'created_at' => $consult->created_at ? $consult->created_at->format('M j, Y') : '-',
+            ];
+        });
+
+    return response()->json([
+        'status' => true,
+        'data' => $consultancies
+    ]);
+}
 
  public function chatSystem(Request $request)
     {
@@ -253,9 +335,11 @@ public function index()
                 ->get()
                 ->map(function ($msg) {
                     return [
+                        'id' => $msg->id,
                         'sender_id' => $msg->sender_id,
                         'message' => $msg->message,
                         'time' => $msg->created_at->diffForHumans(),
+                        'created_at' => $msg->created_at->toDateTimeString(),
                     ];
                 });
 

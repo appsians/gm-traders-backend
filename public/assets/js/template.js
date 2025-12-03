@@ -98,7 +98,15 @@
 
 
     //Add active class to nav-link based on url dynamically
+    // Disabled for sidebar - handled server-side via Blade templates
+    // Only runs for horizontal menu if needed
     function addActiveClass(element) {
+        // Skip sidebar navigation - it's handled server-side
+        if (element.closest('.sidebar').length) {
+            return;
+        }
+        
+        var current = location.pathname.split("/").slice(-1)[0].replace(/^\/|\/$/g, '');
         if (current === "") {
           //for root url
           if (element.attr('href').indexOf("index.html") !== -1) {
@@ -109,8 +117,12 @@
             }
           }
         } else {
-          //for other url
-          if (element.attr('href').indexOf(current) !== -1) {
+          //for other url - use exact path matching
+          var href = element.attr('href');
+          var currentPath = window.location.pathname;
+          
+          // Only match exact paths to prevent false matches
+          if (href && (currentPath === href || currentPath.indexOf(href) === 0)) {
             element.parents('.nav-item').last().addClass('active');
             if (element.parents('.sub-menu').length) {
               element.closest('.collapse').addClass('show');
@@ -123,12 +135,8 @@
         }
     }
 
-      var current = location.pathname.split("/").slice(-1)[0].replace(/^\/|\/$/g, '');
-      $('.nav li a', sidebar).each(function() {
-        var $this = $(this);
-        addActiveClass($this);
-      });
-
+    // Skip sidebar - it's handled server-side
+    // Only process horizontal menu
     $('.horizontal-menu .nav li a').each(function() {
       var $this = $(this);
       addActiveClass($this);

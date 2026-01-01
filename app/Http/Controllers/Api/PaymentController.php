@@ -28,7 +28,14 @@ class PaymentController extends Controller
     public function createOrder(Request $request)
 {
     $data = $request->all();
-    Log::info('Create Order Request Data:', $data);
+    
+    // ✅ Log full payload with pretty JSON formatting
+    Log::info('=== CREATE ORDER REQUEST PAYLOAD ===');
+    Log::info('Full Request Payload: ' . json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    Log::info('User ID: ' . (auth()->id() ?? ($data['user_id'] ?? 'not provided')));
+    Log::info('Total Amount: ' . ($data['total_amount'] ?? 'not provided'));
+    Log::info('Items Count: ' . (isset($data['items']) && is_array($data['items']) ? count($data['items']) : 0));
+    Log::info('=====================================');
 
        $userId = auth()->id() ?? ($data['user_id'] ?? null);
 
@@ -155,7 +162,7 @@ if ($request->redeem_coins === true || $request->redeem_coins == 1) {
         // ✅ Save order items
         if (!empty($data['items'])) {
             foreach ($data['items'] as $item) {
-                $order->orderitems()->create([
+                $orderItem = $order->orderitems()->create([
                     'product_id'  => $item['product_id'] ?? null,
                     'variety'     => $item['variety'] ?? null,
                     'quality'     => $item['quality'] ?? null,
@@ -165,6 +172,94 @@ if ($request->redeem_coins === true || $request->redeem_coins == 1) {
                     'image'       => $item['image'] ?? null,
                     'cart_type'   => $item['cart_type'] ?? null,
                 ]);
+
+                // ✅ Update quantities immediately when order is created
+                $itemModel = null;
+                $itemTitle = '';
+
+                // ✅ Log item payload for debugging
+                Log::info("Processing item - Cart Type: " . ($item['cart_type'] ?? 'null') . ", Product ID: " . ($item['product_id'] ?? 'null') . ", Price: " . ($item['price'] ?? 'null') . ", Quantity: " . ($item['quantity'] ?? 'null'));
+                Log::info("Full item payload: " . json_encode($item, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+                switch ($item['cart_type'] ?? null) {
+                    case 'plant':
+                        $itemModel = Product::where('id', $item['product_id'] ?? null)->first();
+                        break;
+
+                    case 'trills_material':
+                        $itemModel = Trills_Material::where('id', $item['product_id'] ?? null)->first();
+                        break;
+
+                    case 'kanal_picker':
+                        // Try to find by ID first (product_id might be kanal_picker id)
+                        $itemModel = kanal_picker::where('id', $item['product_id'] ?? null)->first();
+                        
+                        // If not found, try by plant_variety_id and price (price is stored as string)
+                        if (!$itemModel) {
+                            $itemModel = kanal_picker::where('plant_variety_id', $item['product_id'] ?? null)
+                                ->where('price', (string)($item['price'] ?? 0))
+                                ->first();
+                        }
+                        
+                        // If still not found, try with numeric comparison for price
+                        if (!$itemModel) {
+                            $itemModel = kanal_picker::where('plant_variety_id', $item['product_id'] ?? null)
+                                ->whereRaw('CAST(price AS UNSIGNED) = ?', [(int)($item['price'] ?? 0)])
+                                ->first();
+                        }
+                        
+                        $itemTitle = 'Kanal Picker';
+                        break;
+
+                    case 'plants_reservation':
+                        // For plant_reservation, product_id is the reservation id
+                        $itemModel = plant_reservation::where('id', $item['product_id'] ?? null)
+                            ->where('price', (int)($item['price'] ?? 0))
+                            ->first();
+                        $itemTitle = 'Plant Reservation';
+                        break;
+                }
+
+                // ✅ Deduct quantity if item found and has quantity field
+                if ($itemModel && isset($itemModel->quantity)) {
+                    $oldQuantity = $itemModel->quantity;
+                    $deductQuantity = $item['quantity'] ?? 0;
+                    $itemName = isset($itemModel->feather) ? $itemModel->feather : ($itemModel->name ?? 'Item');
+                    
+                    Log::info("Processing quantity deduction for {$item['cart_type']} - Name: {$itemName} (ID: {$itemModel->id}) - Current quantity: {$oldQuantity}, Deducting order quantity: {$deductQuantity}");
+
+                    $newQuantity = $oldQuantity - $deductQuantity;
+
+                    if ($newQuantity < 0) {
+                        $itemDisplayName = !empty($itemTitle) ? $itemTitle : ucfirst($item['cart_type'] ?? 'Item');
+                        Log::error("Insufficient stock for {$itemDisplayName} '{$itemName}' on order creation - Available: {$oldQuantity}, Required: {$deductQuantity}");
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => false,
+                            'message' => "Insufficient stock for {$itemDisplayName}. Available: {$oldQuantity}, Required: {$deductQuantity}",
+                        ], 400);
+                    }
+
+                    $itemModel->update(['quantity' => $newQuantity]);
+                    Log::info("Successfully updated '{$itemName}' quantity from {$oldQuantity} to: {$newQuantity}");
+                } else {
+                    if ($itemModel && !isset($itemModel->quantity)) {
+                        Log::warning("Item model found for {$item['cart_type']} but quantity field does not exist (ID: {$item['product_id']})");
+                    } elseif (in_array($item['cart_type'] ?? null, ['kanal_picker', 'plants_reservation'])) {
+                        // Add debug logging to help troubleshoot
+                        $debugQuery = kanal_picker::where('plant_variety_id', $item['product_id'] ?? null)->get();
+                        Log::warning("Could not find {$item['cart_type']} item with product_id: {$item['product_id']} and price: {$item['price']} for order creation. Available records with plant_variety_id {$item['product_id']}: " . $debugQuery->count());
+                        foreach ($debugQuery as $debug) {
+                            Log::info("  - Kanal Picker ID: {$debug->id}, Price: '{$debug->price}' (type: " . gettype($debug->price) . "), Feather: {$debug->feather}");
+                        }
+                        
+                        // Also check by ID
+                        $byId = kanal_picker::where('id', $item['product_id'] ?? null)->first();
+                        if ($byId) {
+                            Log::info("  - Found kanal_picker by ID {$item['product_id']}: Price '{$byId->price}', Feather: {$byId->feather}");
+                        }
+                    }
+                }
             }
         }
 
@@ -468,93 +563,23 @@ if ($request->redeem_coins === true || $request->redeem_coins == 1) {
 if ($generatedSignature === $request->signature) {
      $order = Order::where('order_id', $request->order_id)->first();
 
+     if (!$order) {
+         return response()->json([
+             'status' => false,
+             'message' => 'Order not found.',
+         ], 404);
+     }
+
       $order->update([
         'is_verify' => 1,
-
     ]);
 
-       $orderItems = $order->orderitems; // fetch related order items
+    // ✅ Quantity deduction is now handled in createOrder method
+    // No need to deduct quantities here to avoid double deduction
 
-        foreach ($orderItems as $item) {
+    Log::info("Payment verified successfully for order: {$order->order_id}");
 
-            $itemModel = null;
-            $itemTitle = '';
-
-            switch ($item->cart_type) {
-
-                case 'plant':
-                    $itemModel = Product::where('id', $item->product_id)->first();
-
-                    break;
-
-                case 'trills_material':
-                    $itemModel = Trills_Material::where('id', $item->product_id)->first();
-
-                    break;
-
-                case 'kanal_picker':
-                    // For kanal_picker, product_id is plant_variety_id, so query by plant_variety_id and price
-                    $itemModel = kanal_picker::where('plant_variety_id', $item->product_id)
-                        ->where('price', (int)$item->price)
-                        ->first();
-                    $itemTitle = $itemModel ? 'Kanal Picker' : 'Kanal Picker';
-                    break;
-    case 'plants_reservation':
-                    // For plant_reservation, product_id is plant_variety_id, so query by plant_variety_id and price
-                    $itemModel = plant_reservation::where('id', $item->product_id)
-                        ->where('price', (int)$item->price)
-                        ->first();
-                    $itemTitle = $itemModel ? 'Plant Reservation' : 'Plant Reservation';
-                    break;
-
-
-            }
-
-             if ($itemModel) {
-                Log::info("Processing feather quantity deduction for {$item->cart_type} - Feather: {$itemModel->feather} (ID: {$itemModel->id}) - Current feather quantity: {$itemModel->quantity}, Deducting order quantity: {$item->quantity}");
-
-                $newQuantity = $itemModel->quantity - $item->quantity;
-
-                if ($newQuantity < 0) {
-                    Log::error("Insufficient feather stock for {$itemTitle} '{$itemModel->feather}' on order {$order->order_id} - Available: {$itemModel->quantity}, Required: {$item->quantity}");
-                    continue;
-                }
-
-                $itemModel->update(['quantity' => $newQuantity]);
-                Log::info("Successfully updated feather '{$itemModel->feather}' quantity from {$itemModel->quantity} to: {$newQuantity}");
-            } else {
-                Log::error("Could not find {$item->cart_type} item with plant_variety_id: {$item->product_id} and price: {$item->price} for order {$order->order_id}");
-
-                // Debug: Show what we're looking for
-                if ($item->cart_type === 'plants_reservation') {
-                    $existingRecords = plant_reservation::where('plant_variety_id', $item->product_id)
-                        ->where('price', $item->price)
-                        ->get();
-                    Log::info("Available plant_reservation records with plant_variety_id {$item->product_id} and price {$item->price}: " . $existingRecords->count());
-                    if ($existingRecords->count() == 0) {
-                        // Also check without price filter to see all variants
-                        $allRecords = plant_reservation::where('plant_variety_id', $item->product_id)->get();
-                        Log::info("Total plant_reservation records with plant_variety_id {$item->product_id} (all prices): " . $allRecords->count());
-                        foreach ($allRecords as $record) {
-                            Log::info("  - ID: {$record->id}, Price: {$record->price}, Quantity: {$record->quantity}, Feather: {$record->feather}");
-                        }
-                    }
-                } elseif ($item->cart_type === 'kanal_picker') {
-                    $existingRecords = kanal_picker::where('plant_variety_id', $item->product_id)
-                        ->where('price', $item->price)
-                        ->get();
-                    Log::info("Available kanal_picker records with plant_variety_id {$item->product_id} and price {$item->price}: " . $existingRecords->count());
-                    if ($existingRecords->count() == 0) {
-                        // Also check without price filter to see all variants
-                        $allRecords = kanal_picker::where('plant_variety_id', $item->product_id)->get();
-                        Log::info("Total kanal_picker records with plant_variety_id {$item->product_id} (all prices): " . $allRecords->count());
-                        foreach ($allRecords as $record) {
-                            Log::info("  - ID: {$record->id}, Price: {$record->price}, Quantity: {$record->quantity}, Feather: {$record->feather}");
-                        }
-                    }
-                }
-            }
-        }
+    // Removed quantity deduction logic - quantities are updated in createOrder
 
 
 

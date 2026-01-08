@@ -14,4 +14,14 @@ class Community extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function likes()
+    {
+        return $this->hasMany(PostLike::class, 'post_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(PostComment::class, 'post_id');
+    }
 }

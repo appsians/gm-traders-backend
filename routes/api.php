@@ -60,6 +60,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('update/post/{id}', [CommunityController::class, 'update']);
     Route::delete('delete/post/{id}', [CommunityController::class, 'destroy']);
     Route::get('all/post', [CommunityController::class, 'allpostget']);
+    
+    // Post likes and comments endpoints
+    Route::post('post/{post_id}/like', [CommunityController::class, 'likePost']);
+    Route::get('post/{post_id}/comments', [CommunityController::class, 'getComments']);
+    Route::post('post/{post_id}/comment', [CommunityController::class, 'addComment']);
+    Route::delete('comment/{comment_id}', [CommunityController::class, 'deleteComment']);
 
 
      Route::prefix('products')->group(function () {

@@ -9,6 +9,7 @@ use App\Services\TwilioService;
 use App\Models\User;
 use Twilio\Rest\Client;
 use App\Services\OtpService;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -123,24 +124,60 @@ class LoginController extends Controller
 
      public function login(Request $request)
     {
-
         $request->validate([
             'phone' => 'required',
         ]);
 
-        $user = User::where('phone', $request->phone)->first();
+        $phone = $request->phone;
+        
+        // Log login attempt
+        Log::info('User login attempt with mobile phone', [
+            'phone' => $phone,
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'timestamp' => now()->toDateTimeString()
+        ]);
+
+        $user = User::where('phone', $phone)->first();
 
         if (!$user) {
+            Log::warning('Login attempt failed - User not found', [
+                'phone' => $phone,
+                'ip_address' => $request->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
             return response()->json([
                 'status'  => false,
                 'message' => 'User not found'
             ], 200);
         }
 
-        // Send OTP via Twilio Verify
+        // Send OTP via MSG91
         try {
-            $this->otpService->sendOtp($request->phone);
+            Log::info('Sending OTP for login', [
+                'user_id' => $user->id,
+                'phone' => $phone,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
+            $otpResponse = $this->otpService->sendOtp($phone);
+            
+            Log::info('OTP sent successfully for login', [
+                'user_id' => $user->id,
+                'phone' => $phone,
+                'otp_service_response' => $otpResponse,
+                'timestamp' => now()->toDateTimeString()
+            ]);
         } catch (\Exception $e) {
+            Log::error('Failed to send OTP for login', [
+                'user_id' => $user->id,
+                'phone' => $phone,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
             return response()->json([
                 'status'  => false,
                 'message' => 'Failed to send OTP'
@@ -150,7 +187,7 @@ class LoginController extends Controller
         return response()->json([
             'status'  => true,
             'message' => 'OTP sent to your phone',
-            'phone'   => $request->phone,
+            'phone'   => $phone,
         ],200);
     }
 
@@ -295,26 +332,52 @@ public function verifyOtp(Request $request)
     ]);
 
     $mobile = $request->phone;
+    $otp = $request->otp;
+
+    // Log OTP verification attempt
+    Log::info('OTP verification attempt', [
+        'phone' => $mobile,
+        'otp_length' => strlen($otp),
+        'ip_address' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+        'timestamp' => now()->toDateTimeString()
+    ]);
 
     $user = User::where('phone', $mobile)->first();
 
     if (!$user) {
+        Log::warning('OTP verification failed - User not found', [
+            'phone' => $mobile,
+            'ip_address' => $request->ip(),
+            'timestamp' => now()->toDateTimeString()
+        ]);
+        
         return response()->json([
             'status' => false,
             'message' => 'User not found'
         ], 404);
     }
 
-  
+    Log::info('Verifying OTP with MSG91 service', [
+        'user_id' => $user->id,
+        'phone' => $mobile,
+        'otp_length' => strlen($otp),
+        'timestamp' => now()->toDateTimeString()
+    ]);
 
     // ✅ VERIFY OTP FROM MSG91
-    $verification = $this->otpService->verifyOtp($mobile, $request->otp);
+    $verification = $this->otpService->verifyOtp($mobile, $otp);
 
     if (isset($verification['type']) && $verification['type'] === 'success') {
-
-       // $user->save(['phone_verified_at' => 1]);
-
         $token = $user->createToken('auth_token')->plainTextToken;
+
+        Log::info('OTP verified successfully - User logged in', [
+            'user_id' => $user->id,
+            'phone' => $mobile,
+            'verification_response' => $verification,
+            'token_generated' => true,
+            'timestamp' => now()->toDateTimeString()
+        ]);
 
         return response()->json([
             'status' => true,
@@ -324,6 +387,14 @@ public function verifyOtp(Request $request)
 //             'coins' => $user->coins ?? 0,
         ]);
     }
+
+    Log::warning('OTP verification failed - Invalid or expired OTP', [
+        'user_id' => $user->id,
+        'phone' => $mobile,
+        'verification_response' => $verification,
+        'error_message' => $verification['message'] ?? 'Invalid or expired OTP',
+        'timestamp' => now()->toDateTimeString()
+    ]);
 
     return response()->json([
         'status' => false,
@@ -341,25 +412,50 @@ public function verifyOtp(Request $request)
     ]);
  $mobile = $request->phone;
    
+    // Log resend OTP attempt
+    Log::info('Resend OTP request', [
+        'phone' => $mobile,
+        'ip_address' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+        'timestamp' => now()->toDateTimeString()
+    ]);
+   
     try {
         // ✅ 1. Check if the user exists
        // $mobile = $request->phone; // numeric only for MSG91
         $user = User::where('phone', $mobile)->first();
 
         if (!$user) {
+            Log::warning('Resend OTP failed - User not found', [
+                'phone' => $mobile,
+                'ip_address' => $request->ip(),
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
             return response()->json([
                 'status'  => 'error',
                 'message' => 'This phone number is not registered.'
             ], 404);
         }
 
-      
+        Log::info('Resending OTP via MSG91 service', [
+            'user_id' => $user->id,
+            'phone' => $mobile,
+            'timestamp' => now()->toDateTimeString()
+        ]);
 
        
      $verification = $this->otpService->resendOtp($mobile);
 
         // ✅ 4. Handle MSG91 response
         if (isset($verification['type']) && $verification['type'] === 'success') {
+            Log::info('OTP resent successfully', [
+                'user_id' => $user->id,
+                'phone' => $mobile,
+                'verification_response' => $verification,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
             return response()->json([
                 'status'  => true,
                 'message' => 'OTP resent successfully.',
@@ -367,7 +463,14 @@ public function verifyOtp(Request $request)
             ], 200);
         }
 
-        // Twilio didn’t accept or failed silently
+        Log::warning('Failed to resend OTP', [
+            'user_id' => $user->id,
+            'phone' => $mobile,
+            'verification_response' => $verification,
+            'timestamp' => now()->toDateTimeString()
+        ]);
+
+        // MSG91 didn't accept or failed silently
         return response()->json([
             'status'  => false,
             'message' => 'Failed to resend OTP. Please try again later.'
@@ -377,6 +480,13 @@ public function verifyOtp(Request $request)
     
     
 } catch (\Exception $e) {
+    Log::error('Exception while resending OTP', [
+        'phone' => $mobile,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+        'timestamp' => now()->toDateTimeString()
+    ]);
+    
     return response()->json([
         'status'  => 'error',
         'message' => 'MSG91 error: ' . $e->getMessage(),

@@ -198,7 +198,7 @@ $(document).ready(function() {
                 searchable: false,
                 render: function(data, type, row) {
                     if (data) {
-                        return '<img src="' + "{{ asset('') }}" + data + '" alt="Fruit Image" class="fruit-image">';
+                        return '<img src="' + data + '" alt="Fruit Image" class="fruit-image">';
                     }
                     return '<span class="text-muted">No Image</span>';
                 }

@@ -46,13 +46,38 @@ class OtpService
 
     /**
      * Verify OTP entered by the user
+     * 
+     * Supports OTP bypass for testing/development:
+     * - Set OTP_BYPASS_ENABLED=true in .env to enable
+     * - Set OTP_BYPASS_CODE=1234 (or any code) in .env
+     * - When enabled, the bypass code will be accepted for any phone number
      *
-     * @param string $requestId
+     * @param string $mobile
      * @param string $otp
      * @return array
      */
     public function verifyOtp($mobile, $otp)
     {
+        // Check if OTP bypass is enabled and if the provided OTP matches the bypass code
+        // This is useful for testing/development without needing actual SMS OTP
+        $bypassEnabled = env('OTP_BYPASS_ENABLED', false);
+        $bypassCode = env('OTP_BYPASS_CODE', '1234');
+        
+        if ($bypassEnabled && $otp == $bypassCode) {
+            Log::info('OTP bypass used - Fixed OTP accepted', [
+                'mobile' => $mobile,
+                'otp' => $otp,
+                'bypass_code' => $bypassCode,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
+            // Return success response similar to MSG91 success response
+            return [
+                'type' => 'success',
+                'message' => 'OTP verified successfully'
+            ];
+        }
+
         $response = Http::withHeaders([
             'authkey' => $this->authKey,
             'Content-Type' => 'application/json'

@@ -12,10 +12,7 @@ class BannerController extends Controller
 {
     public function index()
 {
-    $banners = Homescreen_banner::all()->map(function ($banner) {
-        $banner->icon = asset($banner->icon); // 👈 adds full URL to icon path
-        return $banner;
-    });
+    $banners = Homescreen_banner::all(); // Icon URL is handled by model accessor
 
     return response()->json([
         'status' => true,
@@ -122,8 +119,12 @@ public function bannersData(Request $request)
 
         if ($request->hasFile('icon')) {
             $filename = time() . '.' . $request->icon->extension();
-            $request->icon->move(public_path(''), $filename);
-            $data['icon'] = '' . $filename;
+            $target = public_path('uploads');
+            if (!file_exists($target)) {
+                @mkdir($target, 0755, true);
+            }
+            $request->icon->move($target, $filename);
+            $data['icon'] = 'uploads/' . $filename;
         }
 
 
@@ -192,13 +193,17 @@ public function bannersData(Request $request)
 
 
     if($request->hasFile('icon')) {
-            if($fruit->image && file_exists(public_path($fruit->icon))) {
+            if($fruit->icon && file_exists(public_path($fruit->icon))) {
                 @unlink(public_path($fruit->icon));
             }
 
             $filename = time() . '.' . $request->icon->extension();
-            $request->icon->move(public_path(''), $filename);
-            $fruit->icon = $filename;
+            $target = public_path('uploads');
+            if (!file_exists($target)) {
+                @mkdir($target, 0755, true);
+            }
+            $request->icon->move($target, $filename);
+            $fruit->icon = 'uploads/' . $filename;
         }
 
     $fruit->update();

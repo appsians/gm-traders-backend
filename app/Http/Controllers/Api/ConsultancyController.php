@@ -24,9 +24,7 @@ class ConsultancyController extends Controller
             'sub_consultancy' => $request->sub_consultancy,
         ]);
 
-        // Send email to user
-         Mail::to(auth()->user()->email)->send(new ConsultationMail($consultation));
-     //   Mail::to('rabiarajpoot4040@gmail.com')->send(new ConsultationMail($consultation));
+        
 
         return response()->json([
             'status' => true,

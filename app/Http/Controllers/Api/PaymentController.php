@@ -212,10 +212,23 @@ if ($request->redeem_coins === true || $request->redeem_coins == 1) {
                         break;
 
                     case 'plants_reservation':
-                        // For plant_reservation, product_id is the reservation id
-                        $itemModel = plant_reservation::where('id', $item['product_id'] ?? null)
-                            ->where('price', (int)($item['price'] ?? 0))
-                            ->first();
+                        // Try to find by ID first (product_id might be plant_reservation id)
+                        $itemModel = plant_reservation::where('id', $item['product_id'] ?? null)->first();
+                        
+                        // If not found, try by plant_variety_id and price (price is stored as string)
+                        if (!$itemModel) {
+                            $itemModel = plant_reservation::where('plant_variety_id', $item['product_id'] ?? null)
+                                ->where('price', (string)($item['price'] ?? 0))
+                                ->first();
+                        }
+                        
+                        // If still not found, try with numeric comparison for price
+                        if (!$itemModel) {
+                            $itemModel = plant_reservation::where('plant_variety_id', $item['product_id'] ?? null)
+                                ->whereRaw('CAST(price AS UNSIGNED) = ?', [(int)($item['price'] ?? 0)])
+                                ->first();
+                        }
+                        
                         $itemTitle = 'Plant Reservation';
                         break;
                 }
@@ -247,16 +260,30 @@ if ($request->redeem_coins === true || $request->redeem_coins == 1) {
                         Log::warning("Item model found for {$item['cart_type']} but quantity field does not exist (ID: {$item['product_id']})");
                     } elseif (in_array($item['cart_type'] ?? null, ['kanal_picker', 'plants_reservation'])) {
                         // Add debug logging to help troubleshoot
-                        $debugQuery = kanal_picker::where('plant_variety_id', $item['product_id'] ?? null)->get();
-                        Log::warning("Could not find {$item['cart_type']} item with product_id: {$item['product_id']} and price: {$item['price']} for order creation. Available records with plant_variety_id {$item['product_id']}: " . $debugQuery->count());
-                        foreach ($debugQuery as $debug) {
-                            Log::info("  - Kanal Picker ID: {$debug->id}, Price: '{$debug->price}' (type: " . gettype($debug->price) . "), Feather: {$debug->feather}");
-                        }
-                        
-                        // Also check by ID
-                        $byId = kanal_picker::where('id', $item['product_id'] ?? null)->first();
-                        if ($byId) {
-                            Log::info("  - Found kanal_picker by ID {$item['product_id']}: Price '{$byId->price}', Feather: {$byId->feather}");
+                        if ($item['cart_type'] === 'kanal_picker') {
+                            $debugQuery = kanal_picker::where('plant_variety_id', $item['product_id'] ?? null)->get();
+                            Log::warning("Could not find kanal_picker item with product_id: {$item['product_id']} and price: {$item['price']} for order creation. Available records with plant_variety_id {$item['product_id']}: " . $debugQuery->count());
+                            foreach ($debugQuery as $debug) {
+                                Log::info("  - Kanal Picker ID: {$debug->id}, Price: '{$debug->price}' (type: " . gettype($debug->price) . "), Feather: {$debug->feather}");
+                            }
+                            
+                            // Also check by ID
+                            $byId = kanal_picker::where('id', $item['product_id'] ?? null)->first();
+                            if ($byId) {
+                                Log::info("  - Found kanal_picker by ID {$item['product_id']}: Price '{$byId->price}', Feather: {$byId->feather}");
+                            }
+                        } elseif ($item['cart_type'] === 'plants_reservation') {
+                            $debugQuery = plant_reservation::where('plant_variety_id', $item['product_id'] ?? null)->get();
+                            Log::warning("Could not find plants_reservation item with product_id: {$item['product_id']} and price: {$item['price']} for order creation. Available records with plant_variety_id {$item['product_id']}: " . $debugQuery->count());
+                            foreach ($debugQuery as $debug) {
+                                Log::info("  - Plant Reservation ID: {$debug->id}, Price: '{$debug->price}' (type: " . gettype($debug->price) . "), Feather: {$debug->feather}, Quantity: " . ($debug->quantity ?? 'N/A'));
+                            }
+                            
+                            // Also check by ID
+                            $byId = plant_reservation::where('id', $item['product_id'] ?? null)->first();
+                            if ($byId) {
+                                Log::info("  - Found plant_reservation by ID {$item['product_id']}: Price '{$byId->price}', Feather: {$byId->feather}, Quantity: " . ($byId->quantity ?? 'N/A'));
+                            }
                         }
                     }
                 }

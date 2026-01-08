@@ -192,11 +192,15 @@ class ProductController extends Controller
     $data['plant_id'] = $plantId;
     $data['category'] = 'plant';
 
-    if ($request->hasFile('image')) {
-        $filename = time().'.'.$request->image->extension();
-        $request->image->move(public_path(''), $filename);
-        $data['image'] = $filename;
-    }
+        if ($request->hasFile('image')) {
+            $filename = time().'.'.$request->image->extension();
+            $target = public_path('uploads');
+            if (!file_exists($target)) {
+                @mkdir($target, 0755, true);
+            }
+            $request->image->move($target, $filename);
+            $data['image'] = 'uploads/' . $filename;
+        }
 
     $product = Product::create($data);
 
@@ -476,8 +480,12 @@ return response()->json([ 'status' => true, 'message' => 'plant data fetched suc
 
         if ($request->hasFile('image')) {
             $filename = time() . '.' . $request->image->extension();
-            $request->image->move(public_path(''), $filename);
-            $data['image'] = '' . $filename;
+            $target = public_path('uploads');
+            if (!file_exists($target)) {
+                @mkdir($target, 0755, true);
+            }
+            $request->image->move($target, $filename);
+            $data['image'] = 'uploads/' . $filename;
         }
 
 
@@ -544,8 +552,12 @@ public function updatefruit(Request $request)
             }
 
             $filename = time() . '.' . $request->image->extension();
-            $request->image->move(public_path(''), $filename);
-            $fruit->image = $filename;
+            $target = public_path('uploads');
+            if (!file_exists($target)) {
+                @mkdir($target, 0755, true);
+            }
+            $request->image->move($target, $filename);
+            $fruit->image = 'uploads/' . $filename;
         }
 
     $fruit->update();

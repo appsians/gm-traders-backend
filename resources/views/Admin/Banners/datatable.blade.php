@@ -157,7 +157,7 @@ $(document).ready(function() {
                 searchable: false,
                 render: function(data, type, row) {
                     if (data) {
-                        return '<img src="' + "{{ asset('') }}" + data + '" alt="Banner Icon" class="banner-image">';
+                        return '<img src="' + data + '" alt="Banner Icon" class="banner-image">';
                     }
                     return '<span class="text-muted">No Image</span>';
                 }

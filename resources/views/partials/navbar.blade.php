@@ -225,24 +225,12 @@
 									</div>
 								</div>
                 <ul class="list-unstyled p-1">
-                  {{-- <li class="dropdown-item py-2">
-                    <a href="pages/general/profile.html" class="text-body ms-0">
+                  <li class="dropdown-item py-2">
+                    <a href="{{ route('admin.profile') }}" class="text-body ms-0">
                       <i class="me-2 icon-md" data-feather="user"></i>
                       <span>Profile</span>
                     </a>
                   </li>
-                  <li class="dropdown-item py-2">
-                    <a href="javascript:;" class="text-body ms-0">
-                      <i class="me-2 icon-md" data-feather="edit"></i>
-                      <span>Edit Profile</span>
-                    </a>
-                  </li>
-                  <li class="dropdown-item py-2">
-                    <a href="javascript:;" class="text-body ms-0">
-                      <i class="me-2 icon-md" data-feather="repeat"></i>
-                      <span>Switch User</span>
-                    </a>
-                  </li> --}}
                   <li class="dropdown-item py-2">
                     <a href="{{ url('logout') }}" class="text-body ms-0">
                       <i class="me-2 icon-md" data-feather="log-out"></i>

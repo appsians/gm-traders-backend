@@ -37,6 +37,10 @@ require __DIR__.'/auth.php';
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    
+    // Profile routes
+    Route::get('/admin/profile', [AdminController::class, 'profile'])->name('admin.profile');
+    Route::put('/admin/profile/password', [AdminController::class, 'updatePassword'])->name('admin.profile.password.update');
 
 
 

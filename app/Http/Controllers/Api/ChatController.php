@@ -126,8 +126,33 @@ class ChatController extends Controller
                 ->filter(fn($id) => $id != $adminId)
                 ->values();
 
+    // Fetch users with last message info and sort by last message time
+    $chatUsers = User::whereIn('id', $users)->get()->map(function ($user) use ($adminId) {
+        // Get last message between admin and this user
+        $lastMessage = Chat::where(function ($q) use ($user, $adminId) {
+                $q->where('sender_id', $user->id)
+                  ->where('receiver_id', $adminId);
+            })
+            ->orWhere(function ($q) use ($user, $adminId) {
+                $q->where('sender_id', $adminId)
+                  ->where('receiver_id', $user->id);
+            })
+            ->latest()
+            ->first();
 
-    $chatUsers = User::whereIn('id', $users)->get();
+        return [
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'profile_image' => $user->profile_image
+                ? rtrim(config('app.url'), '/') . '/' . ltrim($user->profile_image, '/')
+                : 'https://via.placeholder.com/37x37',
+            'last_message' => $lastMessage?->message ?? 'No messages yet',
+            'last_message_time' => $lastMessage?->created_at?->diffForHumans() ?? '-',
+            'last_message_created_at' => $lastMessage?->created_at ?? now()->subYears(100), // Very old date for users with no messages
+        ];
+    })
+    ->sortByDesc('last_message_created_at')
+    ->values();
 
     return view('Admin.chat.index', compact('chatUsers'));
 }
@@ -215,9 +240,12 @@ public function index()
 
             'last_message' => $lastMessage?->message ?? 'No messages yet',
             'last_message_time' => $lastMessage?->created_at?->diffForHumans() ?? '-',
+            'last_message_created_at' => $lastMessage?->created_at ?? now()->subYears(100), // Very old date for users with no messages
             'message_count' => $messageCount,
         ];
-    });
+    })
+    ->sortByDesc('last_message_created_at')
+    ->values();
 
     return view('Admin.chat.index', compact('chatUsers'));
 }
@@ -375,8 +403,11 @@ public function getUserConsultancy($userId)
                     : 'https://via.placeholder.com/37x37',
                 'last_message' => $lastMessage?->message ?? 'No messages yet',
                 'last_message_time' => $lastMessage?->created_at?->diffForHumans() ?? '-',
+                'last_message_created_at' => $lastMessage?->created_at ?? now()->subYears(100), // Very old date for users with no messages
             ];
-        });
+        })
+        ->sortByDesc('last_message_created_at')
+        ->values();
 
         return view('Admin.chat.index', compact('chatUsers'));
     }

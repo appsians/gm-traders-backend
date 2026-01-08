@@ -103,8 +103,9 @@ class ConsultancyController extends Controller
                 $q->where('consultancy', 'like', '%' . $searchValue . '%')
                   ->orWhere('sub_consultancy', 'like', '%' . $searchValue . '%')
                   ->orWhereHas('user', function($userQuery) use ($searchValue) {
-                      $userQuery->where('name', 'like', '%' . $searchValue . '%')
-                                ->orWhere('email', 'like', '%' . $searchValue . '%');
+                      $userQuery->where('first_name', 'like', '%' . $searchValue . '%')
+                                ->orWhere('email', 'like', '%' . $searchValue . '%')
+                                ->orWhere('phone', 'like', '%' . $searchValue . '%');
                   });
             });
         }
@@ -121,6 +122,7 @@ class ConsultancyController extends Controller
                 'id' => $consult->id,
                 'user_name' => $consult->user->first_name ?? '-',
                 'user_email' => $consult->user->email ?? '-',
+                'user_phone' => $consult->user->phone ?? '-',
                 'consultancy' => $consult->consultancy ?? '-',
                 'sub_consultancy' => $consult->sub_consultancy ?? '-',
                 'created_at' => $consult->created_at ? \Carbon\Carbon::parse($consult->created_at)->format('m/d/Y') : '-',

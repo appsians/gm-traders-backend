@@ -57,6 +57,7 @@
                                     <th>ID</th>
                                     <th>User Name</th>
                                     <th>User Email</th>
+                                    <th>Phone Number</th>
                                     <th>Consultancy</th>
                                     <th>Sub Consultancy</th>
                                     <th>Created Date</th>
@@ -135,6 +136,7 @@ $(document).ready(function() {
             { data: 'id', name: 'id' },
             { data: 'user_name', name: 'first_name' },
             { data: 'user_email', name: 'user_email' },
+            { data: 'user_phone', name: 'user_phone' },
             { data: 'consultancy', name: 'consultancy' },
             { data: 'sub_consultancy', name: 'sub_consultancy' },
             { data: 'created_at', name: 'created_at' },

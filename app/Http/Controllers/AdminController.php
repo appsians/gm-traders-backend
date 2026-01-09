@@ -483,6 +483,23 @@ public function billingData(Request $request)
         ], 200);
     }
 
+    public function bulkDestroyBilling(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:billings,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = Billing::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => $deletedCount . ' billing address(es) deleted successfully.',
+            'deleted_count' => $deletedCount,
+        ], 200);
+    }
+
 
 
 
@@ -532,6 +549,7 @@ public function allUsers(Request $request)
         'last_name' => 'last_name',
         'phone' => 'phone',
         'email' => 'email',
+        'role' => 'role',
         'created_at' => 'created_at',
     ];
 
@@ -563,6 +581,7 @@ public function allUsers(Request $request)
             'phone' => $user->phone ?? '-',
             'email' => $user->email ?? '-',
             'created_at' => $user->created_at ? $user->created_at->format('Y-m-d') : '-',
+            'role' => $user->role ?? 'user',
         ];
     }
 
@@ -590,11 +609,56 @@ public function User()
             ], 404);
         }
 
+        // Prevent deletion of admin users
+        if ($material->role === 'admin') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Admin users cannot be deleted.',
+            ], 403);
+        }
+
         $material->delete();
 
         return response()->json([
             'status' => true,
             'message' => 'User deleted successfully.',
+        ], 200);
+    }
+
+    public function bulkDestroyUser(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:users,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = 0;
+        $skippedCount = 0;
+
+        foreach ($ids as $id) {
+            $user = User::find($id);
+            if ($user) {
+                // Skip admin users
+                if ($user->role === 'admin') {
+                    $skippedCount++;
+                    continue;
+                }
+                $user->delete();
+                $deletedCount++;
+            }
+        }
+
+        $message = $deletedCount . ' user(s) deleted successfully.';
+        if ($skippedCount > 0) {
+            $message .= ' ' . $skippedCount . ' admin user(s) were skipped (cannot be deleted).';
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => $message,
+            'deleted_count' => $deletedCount,
+            'skipped_count' => $skippedCount,
         ], 200);
     }
     

@@ -214,4 +214,21 @@ class Trills_MaterialController extends Controller
             'message' => 'Material deleted successfully.',
         ], 200);
     }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:trills__materials,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = Trills_Material::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => $deletedCount . ' material(s) deleted successfully.',
+            'deleted_count' => $deletedCount,
+        ], 200);
+    }
 }

@@ -161,6 +161,23 @@ public function bannersData(Request $request)
         return response()->json(['status' => 'success', 'message' => 'Banners deleted']);
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:homescreen_banners,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = Homescreen_banner::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => $deletedCount . ' banner(s) deleted successfully.',
+            'deleted_count' => $deletedCount,
+        ], 200);
+    }
+
 
     public function update(Request $request)
 {

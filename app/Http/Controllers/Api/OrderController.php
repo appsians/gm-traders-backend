@@ -613,6 +613,32 @@ public function setDeliveredDate(Request $request, $id)
         ], 200);
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:orders,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = 0;
+
+        foreach ($ids as $id) {
+            $order = Order::find($id);
+            if ($order) {
+                $order->orderReplacements()->delete();
+                $order->delete();
+                $deletedCount++;
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => $deletedCount . ' order(s) deleted successfully.',
+            'deleted_count' => $deletedCount,
+        ], 200);
+    }
+
 
     public function show($id)
 {

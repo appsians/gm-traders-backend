@@ -294,12 +294,64 @@ public function update(Request $request, $id)
         'quantity' => $request->quantity,
     ]);
 
-    return response()->json([
-        'status' => true,
-        'message' => ucfirst($request->type) . ' feather updated successfully.',
-        'data' => $feather->load('variety')
-    ]);
-}
+        return response()->json([
+            'status' => true,
+            'message' => ucfirst($request->type) . ' feather updated successfully.',
+            'data' => $feather->load('variety')
+        ]);
+    }
+
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'items' => 'required|array',
+            'items.*.id' => 'required|integer',
+            'items.*.type' => 'required|in:reservation,kanal',
+        ]);
+
+        return DB::transaction(function () use ($request) {
+            $deletedCount = 0;
+            $varietyIdsToCheck = [];
+
+            foreach ($request->items as $item) {
+                $id = $item['id'];
+                $type = $item['type'];
+
+                if ($type === 'reservation') {
+                    $feather = plant_reservation::find($id);
+                } else {
+                    $feather = kanal_picker::find($id);
+                }
+
+                if ($feather) {
+                    $varietyId = $feather->plant_variety_id;
+                    $varietyIdsToCheck[] = $varietyId;
+                    $feather->delete();
+                    $deletedCount++;
+                }
+            }
+
+            // Check and delete varieties that have no feathers
+            $uniqueVarietyIds = array_unique($varietyIdsToCheck);
+            foreach ($uniqueVarietyIds as $varietyId) {
+                $reservationExists = plant_reservation::where('plant_variety_id', $varietyId)->exists();
+                $kanalExists = kanal_picker::where('plant_variety_id', $varietyId)->exists();
+
+                if (!$reservationExists && !$kanalExists) {
+                    $variety = plant_variety::find($varietyId);
+                    if ($variety) {
+                        $variety->delete();
+                    }
+                }
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => $deletedCount . ' item(s) deleted successfully.',
+                'deleted_count' => $deletedCount,
+            ], 200);
+        });
+    }
 
 
 }

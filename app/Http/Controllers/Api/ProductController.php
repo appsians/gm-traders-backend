@@ -264,6 +264,32 @@ class ProductController extends Controller
         return response()->json(['status' => true, 'message' => 'Plant Deleted']);
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:products,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = 0;
+
+        foreach ($ids as $id) {
+            $product = Product::find($id);
+            if ($product) {
+                $product->plantfeather()->delete();
+                $product->delete();
+                $deletedCount++;
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => $deletedCount . ' plant(s) deleted successfully.',
+            'deleted_count' => $deletedCount,
+        ], 200);
+    }
+
     // product qr_code
 
      public function scanProduct(Request $request, $plant_id = null)
@@ -557,6 +583,23 @@ public function updatefruit(Request $request)
         $product->delete();
 
         return response()->json(['status' => 'success', 'message' => 'Fruits deleted successfully']);
+    }
+
+    public function bulkDestroyFruit(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:fruits,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = Fruit::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => $deletedCount . ' fruit(s) deleted successfully.',
+            'deleted_count' => $deletedCount,
+        ], 200);
     }
 
 

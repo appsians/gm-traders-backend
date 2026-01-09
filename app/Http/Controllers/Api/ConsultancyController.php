@@ -160,6 +160,23 @@ class ConsultancyController extends Controller
         ], 200);
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:user_consults,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = UserConsult::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => $deletedCount . ' consultancy request(s) deleted successfully.',
+            'deleted_count' => $deletedCount,
+        ], 200);
+    }
+
 
     
     
@@ -254,6 +271,23 @@ public function Addconsult()
         return response()->json([
             'status' => true,
             'message' => ' Consultancy deleted successfully.',
+        ], 200);
+    }
+
+    public function bulkDestroyConsultancy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:consultancies,id',
+        ]);
+
+        $ids = $request->ids;
+        $deletedCount = Consultancy::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => $deletedCount . ' consultancy topic(s) deleted successfully.',
+            'deleted_count' => $deletedCount,
         ], 200);
     }
 

@@ -84,6 +84,7 @@ Route::get('/send-message', function () {
       Route::get('/edit/{id}', [ProductController::class, 'showfruits'])->name('edit_fruit');
       Route::post('/update', [ProductController::class, 'updatefruit'])->name('fruits.update');
      Route::delete('delete/{id}', [ProductController::class, 'destroyfruit']);
+     Route::post('bulk-delete', [ProductController::class, 'bulkDestroyFruit']);
 
 });
 
@@ -98,6 +99,7 @@ Route::get('/send-message', function () {
       Route::get('/edit/{id}', [BannerController::class, 'edit'])->name('edit_banner');
       Route::post('/update', [BannerController::class, 'update'])->name('update');
      Route::delete('delete/{id}', [BannerController::class, 'destroy']);
+     Route::post('bulk-delete', [BannerController::class, 'bulkDestroy']);
 
 });
 
@@ -110,6 +112,7 @@ Route::get('/send-message', function () {
       Route::get('/edit/{id}', [ProductController::class, 'show'])->name('edit_plant');
       Route::post('/update', [ProductController::class, 'update'])->name('plant.update');
      Route::delete('delete/{id}', [ProductController::class, 'destroy']);
+     Route::post('bulk-delete', [ProductController::class, 'bulkDestroy']);
 
 });
 
@@ -130,6 +133,7 @@ Route::post('plant/reservation/store', [PlantreservationController::class, 'stor
 Route::get('/reservation/all', [AdminController::class, 'getallreservation'])->name('plant.reservation.all');
 Route::get('/reservation/data', [AdminController::class, 'gradingData'])->name('grading.data');
 Route::delete('/feather/delete/{id}', [PlantreservationController::class, 'destroy'])->name('reservation.delete');
+Route::post('/reservation/bulk-delete', [PlantreservationController::class, 'bulkDestroy'])->name('reservation.bulk.delete');
 
 
 //kanal picker
@@ -224,6 +228,7 @@ Route::post('/orders/set-delivered-date/{id}', [OrderController::class, 'setDeli
       Route::get('/complete', [OrderController::class, 'completeorders'])->name('complete_order');
       Route::get('/complete/data', [OrderController::class, 'completeOrdersData'])->name('complete_orders.data');
        Route::delete('delete/{id}', [OrderController::class, 'destroy']);
+       Route::post('bulk-delete', [OrderController::class, 'bulkDestroy']);
               Route::get('/replacements', [OrderController::class, 'replacementOrders'])->name('order.replacements');
                        Route::post('/replacements/{id}/update-status', [OrderController::class, 'updateReplacementStatus'])->name('order.replacements.update_status');
                               Route::delete('/replacements/{id}', [OrderController::class, 'deleteReplacement'])->name('order.replacements.delete');
@@ -243,6 +248,7 @@ Route::get('/admin/consultancy/data', [ConsultancyController::class, 'consultanc
  Route::get('/add/consultancy/data', [ConsultancyController::class, 'consultancyData'])->name('add.data');
 
 Route::delete('/delete/consultancy/{id}', [ConsultancyController::class, 'delete'])->name('consultdelet');
+Route::post('/consultancy/bulk-delete', [ConsultancyController::class, 'bulkDestroyConsultancy']);
 Route::post('/consult/update', [ConsultancyController::class, 'update'])
     ->name('consult.update');
     
@@ -257,6 +263,7 @@ Route::post('/consult/update', [ConsultancyController::class, 'update'])
   Route::get('/edit/{id}', [Trills_MaterialController::class, 'show']);
    Route::post('update', [Trills_MaterialController::class, 'update']);
    Route::delete('delete/{id}', [Trills_MaterialController::class, 'destroy']);
+   Route::post('bulk-delete', [Trills_MaterialController::class, 'bulkDestroy']);
 });
 
 Route::get('/clear-cache', function () {
@@ -303,6 +310,7 @@ Route::get('/run-delete-orders', function () {
 
  Route::get('/billing', [AdminController::class, 'billing'])->name('billing.show');
  Route::get('/billing/data', [AdminController::class, 'billingData'])->name('billing.data');
+ Route::post('/billing/bulk-delete', [AdminController::class, 'bulkDestroyBilling']);
 
 
  //qrcode on admin side
@@ -321,6 +329,7 @@ Route::get('/run-delete-orders', function () {
 
 
        Route::delete('consult/delete/{id}', [ConsultancyController::class, 'destroy']);
+       Route::post('consult/bulk-delete', [ConsultancyController::class, 'bulkDestroy']);
 
  Route::get('/fruits/search', [AdminController::class, 'searchfruit'])->name('fruit_search');
  Route::post('/contact/send', [AdminController::class, 'send']);
@@ -333,6 +342,7 @@ Route::get('/run-delete-orders', function () {
    Route::get('all/users', [AdminController::class, 'allUsers'])->name('allusers');
       Route::get('/users', [AdminController::class, 'User'])->name('users');
        Route::delete('user/delete/{id}', [AdminController::class, 'destroyuser']);
+       Route::post('user/bulk-delete', [AdminController::class, 'bulkDestroyUser']);
 
         Route::post('add/consult', [ConsultancyController::class, 'add'])->name('addconsult');
            Route::get('/prompt', [AdminController::class, 'Addprompt'])->name('prompt');

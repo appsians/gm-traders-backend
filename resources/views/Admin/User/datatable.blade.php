@@ -178,6 +178,55 @@
         </div>
     </div>
 </div>
+
+<!-- Export Selection Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">Select Data to Export</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">Select which data you want to download for <strong id="exportUserName"></strong>:</p>
+                <div class="form-check mb-2">
+                    <input class="form-check-input export-checkbox" type="checkbox" value="general" id="exportGeneral" checked>
+                    <label class="form-check-label" for="exportGeneral">
+                        <strong>General Information</strong> - User profile and account details
+                    </label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input export-checkbox" type="checkbox" value="posts" id="exportPosts">
+                    <label class="form-check-label" for="exportPosts">
+                        <strong>Community Posts</strong> - All community posts with likes and comments
+                    </label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input export-checkbox" type="checkbox" value="orders" id="exportOrders">
+                    <label class="form-check-label" for="exportOrders">
+                        <strong>Orders</strong> - Order history and order items
+                    </label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input export-checkbox" type="checkbox" value="chats" id="exportChats">
+                    <label class="form-check-label" for="exportChats">
+                        <strong>Chats</strong> - All chat messages and conversations
+                    </label>
+                </div>
+                <div class="alert alert-info mt-3 mb-0">
+                    <small><i class="fa fa-info-circle"></i> Selected data will be exported as CSV files and downloaded as a ZIP archive.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmExportBtn">
+                    <i class="fa fa-download"></i> Download Selected
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 
@@ -250,8 +299,17 @@ $(document).ready(function () {
                             <i class="fa fa-comments"></i>
                         </a>
                     `;
+                    var downloadButton = `
+                        <button class="btn btn-sm btn-success download-user-data" 
+                                data-user-id="${row.id}" 
+                                data-user-name="${row.first_name || 'User'}"
+                                title="Download User Data">
+                            <i class="fa fa-download"></i>
+                        </button>
+                    `;
                     return `
                         <div class="action-buttons">
+                            ${downloadButton}
                             ${viewPostsButton}
                             ${deleteButton}
                         </div>
@@ -417,6 +475,75 @@ $(document).ready(function () {
             }
         });
         updateBulkActions();
+    });
+
+    // Export User Data Modal
+    var currentUserId = null;
+    var currentUserName = null;
+
+    $(document).on('click', '.download-user-data', function(e) {
+        e.preventDefault();
+        currentUserId = $(this).data('user-id');
+        currentUserName = $(this).data('user-name') || 'User';
+        
+        $('#exportUserName').text(currentUserName);
+        $('#exportModal').modal('show');
+    });
+
+    // Confirm Export Button
+    $('#confirmExportBtn').on('click', function() {
+        var selectedTypes = [];
+        $('.export-checkbox:checked').each(function() {
+            selectedTypes.push($(this).val());
+        });
+
+        if (selectedTypes.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Selection',
+                text: 'Please select at least one data type to export.'
+            });
+            return;
+        }
+
+        // Close modal
+        $('#exportModal').modal('hide');
+
+        // Show loading
+        Swal.fire({
+            title: 'Preparing Export...',
+            text: 'Please wait while we prepare your files.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Build URL with selected types
+        var exportUrl = '/user/export/' + currentUserId + '?export_types=' + selectedTypes.join(',');
+        
+        // Create a temporary form to submit the request
+        var form = $('<form>', {
+            method: 'GET',
+            action: exportUrl,
+            target: '_blank'
+        });
+        
+        $('body').append(form);
+        form.submit();
+        form.remove();
+
+        // Close loading after a short delay
+        setTimeout(function() {
+            Swal.close();
+            Swal.fire({
+                icon: 'success',
+                title: 'Download Started',
+                text: 'Your export files are being prepared. The download should start shortly.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }, 1000);
     });
 
     // DELETE USER

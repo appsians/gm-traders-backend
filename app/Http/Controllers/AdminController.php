@@ -21,6 +21,8 @@ use App\Models\plant_reservation;
 use App\Models\Community;
 use App\Models\PostComment;
 use App\Models\PostLike;
+use App\Models\Chat;
+use App\Models\order_items;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +31,7 @@ use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\File;
+use ZipArchive;
 
 
 
@@ -672,7 +675,368 @@ public function exportUsers(Request $request)
     return response()->stream($callback, 200, $headers);
 }
 
- public function destroyuser($id)
+public function exportSingleUser(Request $request, $id)
+{
+    $user = User::find($id);
+    
+    if (!$user) {
+        return response()->json([
+            'status' => false,
+            'message' => 'User not found.'
+        ], 404);
+    }
+    
+    // Get selected export types from request
+    $exportTypes = $request->input('export_types', ['general']);
+    
+    if (!is_array($exportTypes)) {
+        $exportTypes = explode(',', $exportTypes);
+    }
+    
+    // Create temporary directory for CSV files
+    $baseTempDir = storage_path('app/temp_exports');
+    if (!file_exists($baseTempDir)) {
+        mkdir($baseTempDir, 0755, true);
+    }
+    $tempDir = $baseTempDir . '/' . uniqid('user_' . $id . '_', true);
+    if (!file_exists($tempDir)) {
+        mkdir($tempDir, 0755, true);
+    }
+    
+    $csvFiles = [];
+    
+    // Generate General Information CSV
+    if (in_array('general', $exportTypes)) {
+        $csvFiles[] = $this->generateGeneralInfoCSV($user, $tempDir);
+    }
+    
+    // Generate Community Posts CSV
+    if (in_array('posts', $exportTypes)) {
+        $csvFiles[] = $this->generateCommunityPostsCSV($user, $tempDir);
+    }
+    
+    // Generate Orders CSV (may return multiple files: orders.csv and order_items.csv)
+    if (in_array('orders', $exportTypes)) {
+        $orderFiles = $this->generateOrdersCSV($user, $tempDir);
+        $csvFiles = array_merge($csvFiles, $orderFiles);
+    }
+    
+    // Generate Chats CSV
+    if (in_array('chats', $exportTypes)) {
+        $csvFiles[] = $this->generateChatsCSV($user, $tempDir);
+    }
+    
+    // Create ZIP file
+    $zipFilename = 'user_' . $user->id . '_' . str_replace(' ', '_', ($user->first_name ?? 'User')) . '_' . date('Y-m-d_His') . '.zip';
+    $zipFilename = preg_replace('/[^a-zA-Z0-9_.-]/', '', $zipFilename);
+    $zipPath = $tempDir . '/' . $zipFilename;
+    
+    $zip = new ZipArchive();
+    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+        foreach ($csvFiles as $csvFile) {
+            if (file_exists($csvFile)) {
+                $zip->addFile($csvFile, basename($csvFile));
+            }
+        }
+        $zip->close();
+    }
+    
+    // Clean up individual CSV files
+    foreach ($csvFiles as $csvFile) {
+        if (file_exists($csvFile)) {
+            unlink($csvFile);
+        }
+    }
+    
+    // Return ZIP file
+    if (file_exists($zipPath)) {
+        // Clean up temp directory files (not the zip yet)
+        if (file_exists($tempDir)) {
+            $files = glob($tempDir . '/*');
+            foreach ($files as $file) {
+                if (is_file($file) && $file != $zipPath) {
+                    @unlink($file);
+                }
+            }
+        }
+        
+        $headers = [
+            'Content-Type' => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="' . $zipFilename . '"',
+            'Content-Length' => filesize($zipPath),
+        ];
+        
+        // Clean up temp directory after response is sent
+        // Use deleteFileAfterSend for the zip file, and manually clean directory
+        $response = response()->download($zipPath, $zipFilename, $headers);
+        
+        // Clean up directory after file is sent
+        $response->deleteFileAfterSend(true);
+        
+        // Schedule directory cleanup
+        register_shutdown_function(function() use ($tempDir) {
+            if (is_dir($tempDir)) {
+                // Delete all files in directory first
+                $files = array_diff(scandir($tempDir), array('.', '..'));
+                foreach ($files as $file) {
+                    @unlink($tempDir . '/' . $file);
+                }
+                // Remove directory
+                @rmdir($tempDir);
+            }
+        });
+        
+        return $response;
+    }
+    
+    return response()->json([
+        'status' => false,
+        'message' => 'Failed to create export files.'
+    ], 500);
+}
+
+private function generateGeneralInfoCSV($user, $tempDir)
+{
+    $filename = $tempDir . '/general_information.csv';
+    $file = fopen($filename, 'w');
+    
+    // Add BOM for UTF-8
+    fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+    
+    // Headers
+    fputcsv($file, ['Field', 'Value']);
+    
+    // Data
+    $data = [
+        ['ID', $user->id ?? '-'],
+        ['First Name', $user->first_name ?? '-'],
+        ['Last Name', $user->last_name ?? '-'],
+        ['Phone', $user->phone ?? '-'],
+        ['Email', $user->email ?? '-'],
+        ['Farm Name', $user->farm_name ?? '-'],
+        ['Role', $user->role ?? 'user'],
+        ['Referral Code', $user->referral_code ?? '-'],
+        ['Profile Image URL', $user->profile_image ?? '-'],
+        ['Phone Verified At', $user->phone_verified_at ? $user->phone_verified_at->format('Y-m-d H:i:s') : '-'],
+        ['Created At', $user->created_at ? $user->created_at->format('Y-m-d H:i:s') : '-'],
+        ['Updated At', $user->updated_at ? $user->updated_at->format('Y-m-d H:i:s') : '-'],
+    ];
+    
+    foreach ($data as $row) {
+        fputcsv($file, $row);
+    }
+    
+    fclose($file);
+    return $filename;
+}
+
+private function generateCommunityPostsCSV($user, $tempDir)
+{
+    $filename = $tempDir . '/community_posts.csv';
+    $file = fopen($filename, 'w');
+    
+    // Add BOM for UTF-8
+    fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+    
+    // Headers
+    fputcsv($file, [
+        'Post ID',
+        'Description',
+        'Before Image',
+        'After Image',
+        'Likes Count',
+        'Comments Count',
+        'Created At',
+        'Updated At'
+    ]);
+    
+    $posts = Community::where('user_id', $user->id)
+        ->withCount(['likes', 'comments'])
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    foreach ($posts as $post) {
+        $beforeImage = $post->before_image ? url('uploads/community/' . $post->before_image) : '-';
+        $afterImage = $post->after_image ? url('uploads/community/' . $post->after_image) : '-';
+        
+        fputcsv($file, [
+            $post->id,
+            $post->description ?? '-',
+            $beforeImage,
+            $afterImage,
+            $post->likes_count ?? 0,
+            $post->comments_count ?? 0,
+            $post->created_at ? $post->created_at->format('Y-m-d H:i:s') : '-',
+            $post->updated_at ? $post->updated_at->format('Y-m-d H:i:s') : '-',
+        ]);
+    }
+    
+    fclose($file);
+    return $filename;
+}
+
+private function generateOrdersCSV($user, $tempDir)
+{
+    $files = [];
+    $filename = $tempDir . '/orders.csv';
+    $file = fopen($filename, 'w');
+    
+    // Add BOM for UTF-8
+    fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+    
+    // Headers
+    fputcsv($file, [
+        'Order ID',
+        'Order Number',
+        'Status',
+        'Order Type',
+        'Subtotal',
+        'Delivery Fee',
+        'Total Amount',
+        'Amount Paid',
+        'Amount Remaining',
+        'Is Partial Payment',
+        'Pay Now',
+        'Pay Later',
+        'Is Verified',
+        'Location',
+        'Deliver Date',
+        'Delivered Date',
+        'Placed Date',
+        'Name',
+        'Created At',
+        'Updated At'
+    ]);
+    
+    $orders = Order::where('user_id', $user->id)
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    foreach ($orders as $order) {
+        // Get raw values without accessors
+        $orderRaw = $order->getAttributes();
+        
+        fputcsv($file, [
+            $order->id,
+            $order->order_id ?? '-',
+            $orderRaw['status'] ?? '-',
+            $order->order_type ?? '-',
+            $orderRaw['subtotal'] ?? '0',
+            $orderRaw['delivery_fee'] ?? '0',
+            $orderRaw['total_amount'] ?? '0',
+            $orderRaw['amount_paid'] ?? '0',
+            $orderRaw['amount_remaining'] ?? '0',
+            isset($orderRaw['is_partial_payment']) && $orderRaw['is_partial_payment'] ? 'Yes' : 'No',
+            $orderRaw['pay_now'] ?? '0',
+            $orderRaw['pay_later'] ?? '0',
+            isset($orderRaw['is_verify']) && $orderRaw['is_verify'] ? 'Yes' : 'No',
+            $order->location ?? '-',
+            isset($orderRaw['deliver_date']) && $orderRaw['deliver_date'] ? Carbon::parse($orderRaw['deliver_date'])->format('Y-m-d') : '-',
+            isset($orderRaw['delivered_date']) && $orderRaw['delivered_date'] ? Carbon::parse($orderRaw['delivered_date'])->format('Y-m-d') : '-',
+            isset($orderRaw['placed_date']) && $orderRaw['placed_date'] ? Carbon::parse($orderRaw['placed_date'])->format('Y-m-d') : '-',
+            $order->name ?? '-',
+            $order->created_at ? $order->created_at->format('Y-m-d H:i:s') : '-',
+            $order->updated_at ? $order->updated_at->format('Y-m-d H:i:s') : '-',
+        ]);
+    }
+    
+    fclose($file);
+    $files[] = $filename;
+    
+    // Create separate CSV for order items if orders exist
+    if ($orders->count() > 0) {
+        $itemsFilename = $tempDir . '/order_items.csv';
+        $itemsFile = fopen($itemsFilename, 'w');
+        fprintf($itemsFile, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        fputcsv($itemsFile, [
+            'Order ID',
+            'Order Number',
+            'Product ID',
+            'Variety',
+            'Quality',
+            'Price',
+            'Quantity',
+            'Total Price',
+            'Image',
+            'Cart Type'
+        ]);
+        
+        foreach ($orders as $order) {
+            $items = order_items::where('order_id', $order->id)->get();
+            foreach ($items as $item) {
+                fputcsv($itemsFile, [
+                    $order->id,
+                    $order->order_id ?? '-',
+                    $item->product_id ?? '-',
+                    $item->variety ?? '-',
+                    $item->quality ?? '-',
+                    $item->price ?? '0',
+                    $item->quantity ?? '0',
+                    $item->total_price ?? '0',
+                    $item->image ?? '-',
+                    $item->cart_type ?? '-',
+                ]);
+            }
+        }
+        
+        fclose($itemsFile);
+        $files[] = $itemsFilename;
+    }
+    
+    return $files;
+}
+
+private function generateChatsCSV($user, $tempDir)
+{
+    $filename = $tempDir . '/chats.csv';
+    $file = fopen($filename, 'w');
+    
+    // Add BOM for UTF-8
+    fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+    
+    // Headers
+    fputcsv($file, [
+        'Message ID',
+        'Sender ID',
+        'Sender Name',
+        'Receiver ID',
+        'Receiver Name',
+        'Message',
+        'Created At',
+        'Updated At'
+    ]);
+    
+    // Get all chats where user is sender or receiver
+    $chats = Chat::where(function($query) use ($user) {
+            $query->where('sender_id', $user->id)
+                  ->orWhere('receiver_id', $user->id);
+        })
+        ->with(['sender', 'receiver'])
+        ->orderBy('created_at', 'asc')
+        ->get();
+    
+    foreach ($chats as $chat) {
+        $senderName = $chat->sender ? ($chat->sender->first_name . ' ' . $chat->sender->last_name) : 'Unknown';
+        $receiverName = $chat->receiver ? ($chat->receiver->first_name . ' ' . $chat->receiver->last_name) : 'Unknown';
+        
+        fputcsv($file, [
+            $chat->id,
+            $chat->sender_id,
+            trim($senderName),
+            $chat->receiver_id,
+            trim($receiverName),
+            $chat->message ?? '-',
+            $chat->created_at ? $chat->created_at->format('Y-m-d H:i:s') : '-',
+            $chat->updated_at ? $chat->updated_at->format('Y-m-d H:i:s') : '-',
+        ]);
+    }
+    
+    fclose($file);
+    return $filename;
+}
+
+public function destroyuser($id)
     {
         $material = User::find($id);
 

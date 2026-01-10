@@ -343,6 +343,7 @@ Route::get('/run-delete-orders', function () {
       Route::get('/users', [AdminController::class, 'User'])->name('users');
        Route::delete('user/delete/{id}', [AdminController::class, 'destroyuser']);
        Route::post('user/bulk-delete', [AdminController::class, 'bulkDestroyUser']);
+       Route::get('users/export', [AdminController::class, 'exportUsers'])->name('users.export');
 
       // Community Posts Management
       Route::get('/community/posts', [AdminController::class, 'communityPosts'])->name('community.posts');

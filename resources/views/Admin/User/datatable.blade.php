@@ -134,7 +134,12 @@
         <div class="col-md-12 grid-margin stretch-card">
             <div class="card">
                 <div class="card-body">
-                    <h6 class="card-title mb-4">Users List</h6>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h6 class="card-title mb-0">Users List</h6>
+                        <a href="{{ route('users.export') }}" class="btn btn-primary btn-sm" title="Download Users Data">
+                            <i class="fa fa-download"></i> Download CSV
+                        </a>
+                    </div>
                     
                     <!-- Bulk Actions Bar -->
                     <div class="bulk-actions" id="bulkActions">

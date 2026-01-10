@@ -602,6 +602,76 @@ public function User()
     return view('Admin.User.datatable');
 }
 
+public function exportUsers(Request $request)
+{
+    // Get search value if any (same as in allUsers method)
+    $searchValue = $request->get('search', '');
+    
+    $query = User::query();
+    
+    if (!empty($searchValue)) {
+        $query->where(function ($q) use ($searchValue) {
+            $q->where('first_name', 'like', "%$searchValue%")
+              ->orWhere('last_name', 'like', "%$searchValue%")
+              ->orWhere('email', 'like', "%$searchValue%")
+              ->orWhere('phone', 'like', "%$searchValue%");
+        });
+    }
+    
+    $users = $query->orderBy('id', 'desc')->get();
+    
+    $filename = 'users_export_' . date('Y-m-d_His') . '.csv';
+    
+    $headers = [
+        'Content-Type' => 'text/csv',
+        'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        'Pragma' => 'no-cache',
+        'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+        'Expires' => '0'
+    ];
+    
+    $callback = function() use ($users) {
+        $file = fopen('php://output', 'w');
+        
+        // Add BOM for UTF-8 to support special characters in Excel
+        fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        // CSV Headers
+        fputcsv($file, [
+            'ID',
+            'First Name',
+            'Last Name',
+            'Phone',
+            'Email',
+            'Farm Name',
+            'Role',
+            'Referral Code',
+            'Created At',
+            'Updated At'
+        ]);
+        
+        // CSV Data
+        foreach ($users as $user) {
+            fputcsv($file, [
+                $user->id ?? '-',
+                $user->first_name ?? '-',
+                $user->last_name ?? '-',
+                $user->phone ?? '-',
+                $user->email ?? '-',
+                $user->farm_name ?? '-',
+                $user->role ?? 'user',
+                $user->referral_code ?? '-',
+                $user->created_at ? $user->created_at->format('Y-m-d H:i:s') : '-',
+                $user->updated_at ? $user->updated_at->format('Y-m-d H:i:s') : '-',
+            ]);
+        }
+        
+        fclose($file);
+    };
+    
+    return response()->stream($callback, 200, $headers);
+}
+
  public function destroyuser($id)
     {
         $material = User::find($id);

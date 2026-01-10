@@ -29,6 +29,17 @@
                 </a>
             </li>
 
+            {{-- Community Posts --}}
+            @php
+                $isCommunityRoute = request()->routeIs('community.posts') || request()->routeIs('community.user.posts');
+            @endphp
+            <li class="nav-item {{ $isCommunityRoute ? 'active' : '' }}">
+                <a href="{{ route('community.posts') }}" class="nav-link">
+                    <i class="fa-solid fa-comments link-icon"></i>
+                    <span class="link-title">Community Posts</span>
+                </a>
+            </li>
+
             {{-- Products Category --}}
             <li class="nav-item nav-category">Products</li>
 

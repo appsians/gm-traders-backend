@@ -240,8 +240,14 @@ $(document).ready(function () {
                             <i class="fa fa-trash"></i>
                         </button>
                     `;
+                    var viewPostsButton = `
+                        <a href="/community/user/${row.id}/posts" class="btn btn-sm btn-info" title="View Community Posts">
+                            <i class="fa fa-comments"></i>
+                        </a>
+                    `;
                     return `
                         <div class="action-buttons">
+                            ${viewPostsButton}
                             ${deleteButton}
                         </div>
                     `;

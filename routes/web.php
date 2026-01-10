@@ -344,6 +344,22 @@ Route::get('/run-delete-orders', function () {
        Route::delete('user/delete/{id}', [AdminController::class, 'destroyuser']);
        Route::post('user/bulk-delete', [AdminController::class, 'bulkDestroyUser']);
 
+      // Community Posts Management
+      Route::get('/community/posts', [AdminController::class, 'communityPosts'])->name('community.posts');
+      Route::get('/community/posts/data', [AdminController::class, 'communityPostsData'])->name('community.posts.data');
+      Route::get('/community/user/{userId}/posts', [AdminController::class, 'userCommunityPosts'])->name('community.user.posts');
+      Route::get('/community/user/{userId}/posts/data', [AdminController::class, 'userCommunityPostsData'])->name('community.user.posts.data');
+      Route::delete('/community/delete/{id}', [AdminController::class, 'destroyCommunityPost'])->name('community.delete');
+      Route::post('/community/bulk-delete', [AdminController::class, 'bulkDestroyCommunityPosts'])->name('community.bulk.delete');
+      
+      // Comment Management
+      Route::get('/community/post/{postId}/comments', [AdminController::class, 'getPostComments'])->name('community.post.comments');
+      Route::delete('/community/comment/{id}', [AdminController::class, 'destroyComment'])->name('community.comment.delete');
+      Route::post('/community/comments/bulk-delete', [AdminController::class, 'bulkDestroyComments'])->name('community.comments.bulk.delete');
+      
+      // Likes Management
+      Route::get('/community/post/{postId}/likes', [AdminController::class, 'getPostLikes'])->name('community.post.likes');
+
         Route::post('add/consult', [ConsultancyController::class, 'add'])->name('addconsult');
            Route::get('/prompt', [AdminController::class, 'Addprompt'])->name('prompt');
          Route::post('/updateprompt', [AdminController::class, 'updateprompt'])->name('prompt.update');

@@ -263,7 +263,12 @@
 
                     <div class="mb-3">
                         <label for="edit_description" class="form-label">Description</label>
-                        <textarea class="form-control form-control-lg" name="description" id="edit_description" rows="3"></textarea>
+                        <textarea class="form-control form-control-lg" name="description" id="edit_description" rows="3" maxlength="1000"></textarea>
+                        <div class="mt-1">
+                            <small class="text-muted">
+                                <span id="edit-description-char-count">0</span> / 1000 characters
+                            </small>
+                        </div>
                     </div>
 
                     <div class="mb-4">
@@ -601,6 +606,14 @@ $(document).ready(function() {
         });
     });
 
+    // Character counter for edit description
+    function updateEditCharCount() {
+        var length = $('#edit_description').val().length;
+        $('#edit-description-char-count').text(length);
+    }
+    
+    $(document).on('input', '#edit_description', updateEditCharCount);
+
     // Edit button click handler
     $(document).on('click', '.edit-btn', function() {
         var id = $(this).data('id');
@@ -619,7 +632,8 @@ $(document).ready(function() {
                     $('#edit_price').val(data.price);
                     $('#edit_discount_price').val(data.discount_price);
                     $('#edit_quantity').val(data.quantity);
-                    $('#edit_description').val(data.description);
+                    $('#edit_description').val(data.description || '');
+                    updateEditCharCount(); // Update counter when modal opens
 
                     if (data.image) {
                         $('#preview_old_image')
@@ -721,19 +735,25 @@ $(document).ready(function() {
                 xhr.setRequestHeader('X-CSRF-TOKEN', $('meta[name="csrf-token"]').attr('content'));
             },
             success: function(data) {
+                // Always reset button state first
+                $btn.prop('disabled', false).html(originalText);
+                
                 if (data.status === true || data.status === 'success') {
                     toastr.success(data.message || 'Plant updated successfully!');
                     $('#editPlantModal').modal('hide');
                     $('#editPlantForm')[0].reset();
                     $('#preview_old_image').hide();
                     $('#edit-feather-container').empty();
+                    $('#edit-description-char-count').text('0'); // Reset character counter
                     table.ajax.reload(null, false);
                 } else {
                     toastr.warning(data.message || 'Something went wrong.');
-                    $btn.prop('disabled', false).html(originalText);
                 }
             },
             error: function(xhr) {
+                // Reset button state on error
+                $btn.prop('disabled', false).html(originalText);
+                
                 if (xhr.status === 422 && xhr.responseJSON.errors) {
                     $.each(xhr.responseJSON.errors, function(key, error) {
                         if (Array.isArray(error)) {
@@ -745,7 +765,6 @@ $(document).ready(function() {
                 } else {
                     toastr.error(xhr.responseJSON?.message || 'Server error occurred. Please try again.');
                 }
-                $btn.prop('disabled', false).html(originalText);
             }
         });
     });

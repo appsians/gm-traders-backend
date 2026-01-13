@@ -56,26 +56,42 @@ public function analyffzeImage(Request $request)
 // PROMPT;
 
     // Send to OpenAI
-    $response = OpenAI::chat()->create([
-        'model' => 'gpt-4o',
-        'messages' => [
-            [
-                'role' => 'user',
-                'content' => [
-                    ['type' => 'text', 'text' => $prompt],
-                    [
-                        'type' => 'image_url',
-                        'image_url' => [
-                            'url' => "data:image/jpeg;base64,{$image}",
+    try {
+        $response = OpenAI::chat()->create([
+            'model' => 'gpt-4o',
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => [
+                        ['type' => 'text', 'text' => $prompt ?? 'Analyze this image'],
+                        [
+                            'type' => 'image_url',
+                            'image_url' => [
+                                'url' => "data:image/jpeg;base64,{$image}",
+                            ],
                         ],
                     ],
                 ],
             ],
-        ],
-    ]);
+        ]);
 
-    // Extract only the assistant's JSON output (not full API response)
-    $output = $response['choices'][0]['message']['content'] ?? null;
+        // Handle response - check if it's an object or array
+        if (is_object($response)) {
+            $output = $response->choices[0]->message->content ?? null;
+        } else {
+            $output = $response['choices'][0]['message']['content'] ?? null;
+        }
+    } catch (\Exception $e) {
+        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
+            'exception' => $e,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'error' => 'Failed to analyze image',
+            'message' => config('app.debug') ? $e->getMessage() : 'An error occurred while processing your request.'
+        ], 500);
+    }
 
     // Try to decode the JSON returned by GPT
     $decoded = json_decode($output, true);
@@ -291,37 +307,50 @@ PROMPT;
 
 
    // Send to OpenAI
-    $response = OpenAI::chat()->create([
-        'model' => 'gpt-4o-mini',
-        'messages' => [
-            [
-                'role' => 'user',
-                'content' => [
-                    ['type' => 'text', 'text' => $prompt],
-                    [
-                        'type' => 'image_url',
-                        'image_url' => [
-                            'url' => "data:image/jpeg;base64,{$imageBase64}",
+    try {
+        $response = OpenAI::chat()->create([
+            'model' => 'gpt-4o-mini',
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => [
+                        ['type' => 'text', 'text' => $prompt],
+                        [
+                            'type' => 'image_url',
+                            'image_url' => [
+                                'url' => "data:image/jpeg;base64,{$imageBase64}",
+                            ],
                         ],
                     ],
                 ],
             ],
-        ],
-            
-    ]);
-    
-    
-    
-   
+        ]);
 
-      $output = $response['choices'][0]['message']['content'] ?? 'No analysis available';
+        // Handle response - check if it's an object or array
+        if (is_object($response)) {
+            $output = $response->choices[0]->message->content ?? 'No analysis available';
+        } else {
+            $output = $response['choices'][0]['message']['content'] ?? 'No analysis available';
+        }
 
-    // Return as JSON with success message and code 200
-    return response()->json([
-        'status' => true,
-        'message' => 'success',
-        'data' => $output
-    ], 200);
+        // Return as JSON with success message and code 200
+        return response()->json([
+            'status' => true,
+            'message' => 'success',
+            'data' => $output
+        ], 200);
+    } catch (\Exception $e) {
+        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
+            'exception' => $e,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Failed to analyze image. Please try again.',
+            'error' => config('app.debug') ? $e->getMessage() : 'An error occurred while processing your request.'
+        ], 500);
+    }
     
     
    
@@ -405,15 +434,33 @@ Return only valid JSON in this format:
 // PROMPT;
 
 
-    $response = OpenAI::chat()->create([
-        'model' => 'gpt-4o-mini',
-        'messages' => [
-            ['role' => 'system', 'content' => 'You are a professional orchard material estimator.'],
-            ['role' => 'user', 'content' => $prompt],
-        ],
-    ]);
+    try {
+        $response = OpenAI::chat()->create([
+            'model' => 'gpt-4o-mini',
+            'messages' => [
+                ['role' => 'system', 'content' => 'You are a professional orchard material estimator.'],
+                ['role' => 'user', 'content' => $prompt],
+            ],
+        ]);
 
-    $output = $response->choices[0]->message->content;
+        // Handle response - check if it's an object or array
+        if (is_object($response)) {
+            $output = $response->choices[0]->message->content ?? '';
+        } else {
+            $output = $response['choices'][0]['message']['content'] ?? '';
+        }
+    } catch (\Exception $e) {
+        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
+            'exception' => $e,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Failed to calculate orchard materials. Please try again.',
+            'error' => config('app.debug') ? $e->getMessage() : 'An error occurred while processing your request.'
+        ], 500);
+    }
 
     // 🧹 Clean UTF-8 and extract only JSON content
     $output = mb_convert_encoding($output, 'UTF-8', 'UTF-8');
@@ -648,15 +695,32 @@ Return the result strictly in **valid JSON format**, like this:
 ]
 ";
 
-    $response = OpenAI::chat()->create([
-        'model' => 'gpt-4o-mini', // lightweight, cost-effective
-        'messages' => [
-            ['role' => 'system', 'content' => 'You are a professional orchard material estimator.'],
-            ['role' => 'user', 'content' => $prompt],
-        ],
-    ]);
+    try {
+        $response = OpenAI::chat()->create([
+            'model' => 'gpt-4o-mini', // lightweight, cost-effective
+            'messages' => [
+                ['role' => 'system', 'content' => 'You are a professional orchard material estimator.'],
+                ['role' => 'user', 'content' => $prompt],
+            ],
+        ]);
 
-    $output = $response->choices[0]->message->content;
+        // Handle response - check if it's an object or array
+        if (is_object($response)) {
+            $output = $response->choices[0]->message->content ?? '';
+        } else {
+            $output = $response['choices'][0]['message']['content'] ?? '';
+        }
+    } catch (\Exception $e) {
+        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
+            'exception' => $e,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'error' => 'Failed to calculate orchard materials',
+            'message' => config('app.debug') ? $e->getMessage() : 'An error occurred while processing your request.'
+        ], 500);
+    }
 
     // clean and decode JSON output
     $cleaned = preg_replace('/^[^{\[]+|[^}\]]+$/', '', $output);
@@ -1069,32 +1133,50 @@ public function analyzeImage(Request $request)
 
 // PROMPT;
 
-    $response = OpenAI::chat()->create([
-        'model' => 'gpt-4o',
-        'messages' => [
-            [
-                'role' => 'user',
-                'content' => [
-                    ['type' => 'text', 'text' => $prompt],
-                    [
-                        'type' => 'image_url',
-                        'image_url' => [
-                            'url' => "data:image/jpeg;base64,{$imageBase64}",
+    try {
+        $response = OpenAI::chat()->create([
+            'model' => 'gpt-4o',
+            'messages' => [
+                [
+                    'role' => 'user',
+                    'content' => [
+                        ['type' => 'text', 'text' => $prompt],
+                        [
+                            'type' => 'image_url',
+                            'image_url' => [
+                                'url' => "data:image/jpeg;base64,{$imageBase64}",
+                            ],
                         ],
                     ],
                 ],
             ],
-        ],
-        'temperature' => 0.2,
-    ]);
+            'temperature' => 0.2,
+        ]);
 
-    $output = $response['choices'][0]['message']['content'] ?? 'No analysis available';
+        // Handle response - check if it's an object or array
+        if (is_object($response)) {
+            $output = $response->choices[0]->message->content ?? 'No analysis available';
+        } else {
+            $output = $response['choices'][0]['message']['content'] ?? 'No analysis available';
+        }
 
-    return response()->json([
-        'status' => true,
-        'message' => 'success',
-        'data' => $output
-    ], 200);
+        return response()->json([
+            'status' => true,
+            'message' => 'success',
+            'data' => $output
+        ], 200);
+    } catch (\Exception $e) {
+        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
+            'exception' => $e,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Failed to analyze image. Please try again.',
+            'error' => config('app.debug') ? $e->getMessage() : 'An error occurred while processing your request.'
+        ], 500);
+    }
 }
 
 

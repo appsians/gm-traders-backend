@@ -127,7 +127,7 @@ class ProductController extends Controller
 
     $validator = Validator::make($request->all(), [
         'title' => 'required|string|max:255',
-        'description' => 'required|string',
+        'description' => 'required|string|max:1000',
         'image' => 'required|image',
         'price' => 'required|integer',
         'age' => 'required',
@@ -196,7 +196,7 @@ class ProductController extends Controller
 
       $validator = Validator::make($request->all(), [
         'title' => 'required|string|max:255',
-        'description' => 'required|string',
+        'description' => 'required|string|max:1000',
       
         'image' => 'image|max:5120',
         'price' => 'required|numeric|min:0',

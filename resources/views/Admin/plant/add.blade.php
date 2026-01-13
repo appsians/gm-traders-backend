@@ -73,8 +73,13 @@
                         <div class="row mb-3">
                             <div class="col-md-12">
                                 <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
-                                <textarea class="form-control form-control-lg" name="description" id="description" rows="3" placeholder="Enter Description" required></textarea>
+                                <textarea class="form-control form-control-lg" name="description" id="description" rows="3" placeholder="Enter Description" maxlength="1000" required></textarea>
                                 <small class="text-muted">Provide a detailed description of the plant</small>
+                                <div class="mt-1">
+                                    <small class="text-muted">
+                                        <span id="description-char-count">0</span> / 1000 characters
+                                    </small>
+                                </div>
                             </div>
                         </div>
 
@@ -164,6 +169,15 @@ toastr.options = {
 
 // Image preview functionality
 $(document).ready(function() {
+    // Character counter for description
+    function updateCharCount() {
+        var length = $('#description').val().length;
+        $('#description-char-count').text(length);
+    }
+    
+    $('#description').on('input', updateCharCount);
+    updateCharCount(); // Initialize counter
+    
     $('#image').on('change', function(e) {
         var file = e.target.files[0];
         if (file) {

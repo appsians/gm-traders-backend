@@ -81,10 +81,13 @@ public function analyffzeImage(Request $request)
         } else {
             $output = $response['choices'][0]['message']['content'] ?? null;
         }
-    } catch (\Exception $e) {
-        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
-            'exception' => $e,
-            'trace' => $e->getTraceAsString()
+    } catch (\Throwable $e) {
+        \Log::error('OpenAI API Error in analyffzeImage', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'exception_class' => get_class($e),
+            'trace' => $e->getTraceAsString(),
         ]);
 
         return response()->json([
@@ -339,10 +342,13 @@ PROMPT;
             'message' => 'success',
             'data' => $output
         ], 200);
-    } catch (\Exception $e) {
-        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
-            'exception' => $e,
-            'trace' => $e->getTraceAsString()
+    } catch (\Throwable $e) {
+        \Log::error('OpenAI API Error in analyzlleImage', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'exception_class' => get_class($e),
+            'trace' => $e->getTraceAsString(),
         ]);
 
         return response()->json([
@@ -449,10 +455,13 @@ Return only valid JSON in this format:
         } else {
             $output = $response['choices'][0]['message']['content'] ?? '';
         }
-    } catch (\Exception $e) {
-        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
-            'exception' => $e,
-            'trace' => $e->getTraceAsString()
+    } catch (\Throwable $e) {
+        \Log::error('OpenAI API Error in calculate', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'exception_class' => get_class($e),
+            'trace' => $e->getTraceAsString(),
         ]);
 
         return response()->json([
@@ -710,10 +719,13 @@ Return the result strictly in **valid JSON format**, like this:
         } else {
             $output = $response['choices'][0]['message']['content'] ?? '';
         }
-    } catch (\Exception $e) {
-        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
-            'exception' => $e,
-            'trace' => $e->getTraceAsString()
+    } catch (\Throwable $e) {
+        \Log::error('OpenAI API Error in calhhhculate', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'exception_class' => get_class($e),
+            'trace' => $e->getTraceAsString(),
         ]);
 
         return response()->json([
@@ -1165,16 +1177,34 @@ public function analyzeImage(Request $request)
             'message' => 'success',
             'data' => $output
         ], 200);
-    } catch (\Exception $e) {
-        \Log::error('OpenAI API Error: ' . $e->getMessage(), [
-            'exception' => $e,
-            'trace' => $e->getTraceAsString()
+    } catch (\Throwable $e) {
+        // Log the full error details
+        \Log::error('OpenAI API Error in analyzeImage', [
+            'message' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'exception_class' => get_class($e),
+            'trace' => $e->getTraceAsString(),
+            'previous' => $e->getPrevious() ? $e->getPrevious()->getMessage() : null,
         ]);
+
+        // Check if it's a specific OpenAI error
+        $errorMessage = 'Failed to analyze image. Please try again.';
+        if (config('app.debug')) {
+            $errorMessage = $e->getMessage();
+            // If it's the "choices" error, provide more context
+            if (strpos($e->getMessage(), 'choices') !== false) {
+                $errorMessage = 'OpenAI API returned an unexpected response format. This may indicate an API error, invalid API key, or quota issue.';
+            }
+        }
 
         return response()->json([
             'status' => false,
-            'message' => 'Failed to analyze image. Please try again.',
-            'error' => config('app.debug') ? $e->getMessage() : 'An error occurred while processing your request.'
+            'message' => $errorMessage,
+            'error' => config('app.debug') ? [
+                'message' => $e->getMessage(),
+                'type' => get_class($e),
+            ] : 'An error occurred while processing your request.'
         ], 500);
     }
 }

@@ -65,7 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('post/{post_id}/like', [CommunityController::class, 'likePost']);
     Route::get('post/{post_id}/comments', [CommunityController::class, 'getComments']);
     Route::post('post/{post_id}/comment', [CommunityController::class, 'addComment']);
-    Route::delete('comment/{comment_id}', [CommunityController::class, 'deleteComment']);
+    Route::delete('delete/comment/{commentId}', [CommunityController::class, 'deleteComment']);
 
 
      Route::prefix('products')->group(function () {

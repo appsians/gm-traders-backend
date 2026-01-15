@@ -513,42 +513,67 @@ class CommunityController extends Controller
 
     /**
      * Delete a comment
-     * DELETE /comment/{comment_id}
+     * DELETE /api/delete/comment/{commentId}
      */
     public function deleteComment($commentId)
     {
-        $user = Auth::user();
+        try {
+            $user = Auth::user();
 
-        if (!$user) {
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthorized. Please login.',
+                    'data' => [],
+                ], 401);
+            }
+
+            // Validate comment ID
+            if (!is_numeric($commentId) || $commentId <= 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validation failed',
+                    'errors' => [
+                        'comment_id' => ['The comment ID is required.']
+                    ],
+                ], 422);
+            }
+
+            $comment = PostComment::find($commentId);
+
+            if (!$comment) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Comment not found.',
+                    'data' => [],
+                ], 404);
+            }
+
+            // Check if user owns the comment
+            if ($comment->user_id != $user->id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'You don\'t have permission to delete this comment.',
+                    'data' => [],
+                ], 403);
+            }
+
+            // Delete the comment
+            $comment->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Comment deleted successfully',
+                'data' => [],
+            ], 200);
+
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Unauthorized',
-            ], 401);
+                'message' => 'Internal server error. Please try again later.',
+                'data' => [],
+            ], 500);
         }
-
-        $comment = PostComment::find($commentId);
-
-        if (!$comment) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Comment not found or unauthorized',
-            ], 404);
-        }
-
-        // Check if user owns the comment
-        if ($comment->user_id !== $user->id) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Comment not found or unauthorized',
-            ], 403);
-        }
-
-        $comment->delete();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Comment deleted successfully',
-        ], 200);
     }
 
 

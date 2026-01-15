@@ -157,6 +157,55 @@ class ChatController extends Controller
     return view('Admin.chat.index', compact('chatUsers'));
 }
 
+public function getChatUsers()
+{
+    $adminId = Auth::user()->id;
+
+    // Get distinct user IDs who have sent or received messages with admin
+    $users = Chat::where('receiver_id', $adminId)
+                ->orWhere('sender_id', $adminId)
+                ->pluck('sender_id')
+                ->merge(
+                    Chat::where('receiver_id', $adminId)->pluck('receiver_id')
+                )
+                ->unique()
+                ->filter(fn($id) => $id != $adminId)
+                ->values();
+
+    // Fetch users with last message info and sort by last message time
+    $chatUsers = User::whereIn('id', $users)->get()->map(function ($user) use ($adminId) {
+        // Get last message between admin and this user
+        $lastMessage = Chat::where(function ($q) use ($user, $adminId) {
+                $q->where('sender_id', $user->id)
+                  ->where('receiver_id', $adminId);
+            })
+            ->orWhere(function ($q) use ($user, $adminId) {
+                $q->where('sender_id', $adminId)
+                  ->where('receiver_id', $user->id);
+            })
+            ->latest()
+            ->first();
+
+        return [
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'profile_image' => $user->profile_image
+                ? rtrim(config('app.url'), '/') . '/' . ltrim($user->profile_image, '/')
+                : 'https://via.placeholder.com/37x37',
+            'last_message' => $lastMessage?->message ?? 'No messages yet',
+            'last_message_time' => $lastMessage?->created_at?->diffForHumans() ?? '-',
+            'last_message_created_at' => $lastMessage?->created_at ?? now()->subYears(100), // Very old date for users with no messages
+        ];
+    })
+    ->sortByDesc('last_message_created_at')
+    ->values();
+
+    return response()->json([
+        'status' => true,
+        'data' => $chatUsers
+    ]);
+}
+
 
 
 public function chat()

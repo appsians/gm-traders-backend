@@ -124,6 +124,7 @@ Route::get('/send-message', function () {
 
   Route::get('/admin/chat/messages/{userId}', [ChatController::class, 'receive']);
    Route::post('/admin/chat/send', [ChatController::class, 'chatUsers'])->name('admin.chat.send');
+   Route::get('/admin/chat/users', [ChatController::class, 'getChatUsers'])->name('admin.chat.users');
 
 
 // grading

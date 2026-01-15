@@ -630,6 +630,7 @@ $(document).ready(function() {
     let receiverId = null;
     let currentChatItem = null;
     let messagePolling = null;
+    let conversationPolling = null;
     let lastMessageId = null;
     let isUserScrolling = false;
 
@@ -894,7 +895,7 @@ $(document).ready(function() {
             if (receiverId) {
                 loadMessages(false);
             }
-        }, 3000); // Poll every 3 seconds for real-time feel
+        }, 10000); // Poll every 10 seconds
     }
 
     // Stop polling when switching chats
@@ -904,6 +905,112 @@ $(document).ready(function() {
             messagePolling = null;
         }
     }
+
+    // Load conversations list
+    function loadConversations() {
+        $.ajax({
+            url: "{{ route('admin.chat.users') }}",
+            type: 'GET',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(res) {
+                if (res.status && res.data) {
+                    const currentActiveId = receiverId;
+                    const chatUserList = $('#chatUserList');
+                    const currentSearchTerm = $('#userSearch').val().toLowerCase().trim();
+                    
+                    // Clear the list
+                    chatUserList.empty();
+                    
+                    if (res.data.length === 0) {
+                        chatUserList.html(`
+                            <li class="text-center text-muted py-4">
+                                <i data-feather="message-circle" class="icon-lg mb-2"></i>
+                                <p>No conversations yet</p>
+                            </li>
+                        `);
+                        if (typeof feather !== 'undefined') {
+                            feather.replace();
+                        }
+                        return;
+                    }
+                    
+                    // Rebuild the list
+                    res.data.forEach(user => {
+                        const placeholderUrl = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.first_name) + '&background=2196f3&color=fff&size=40';
+                        const avatarUrl = user.profile_image || placeholderUrl;
+                        const isActive = currentActiveId && user.id == currentActiveId;
+                        const searchText = user.first_name.toLowerCase();
+                        const shouldShow = currentSearchTerm === '' || searchText.includes(currentSearchTerm);
+                        
+                        const chatItemHtml = `
+                            <li class="chat-item ${isActive ? 'active' : ''}" 
+                                data-id="${user.id}"
+                                data-first_name="${user.first_name}"
+                                data-image="${user.profile_image || ''}"
+                                data-search="${searchText}"
+                                ${shouldShow ? '' : 'style="display: none;"'}>
+                                <a href="javascript:;" class="d-flex align-items-center text-decoration-none">
+                                    <div class="chat-item-avatar position-relative">
+                                        <img src="${avatarUrl}" 
+                                             class="user-avatar" 
+                                             alt="${user.first_name}"
+                                             onerror="this.src='${placeholderUrl}'">
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <h6 class="mb-0 fw-bold">${escapeHtml(user.first_name)}</h6>
+                                            <small class="text-muted">${user.last_message_time}</small>
+                                        </div>
+                                        <p class="text-muted small mb-0 text-truncate" style="max-width: 200px;">
+                                            ${escapeHtml(user.last_message)}
+                                        </p>
+                                    </div>
+                                </a>
+                            </li>
+                        `;
+                        chatUserList.append(chatItemHtml);
+                    });
+                    
+                    // Update currentChatItem reference if a chat is open
+                    if (currentActiveId) {
+                        currentChatItem = $(`.chat-item[data-id="${currentActiveId}"]`);
+                    }
+                    
+                    // Reinitialize feather icons
+                    if (typeof feather !== 'undefined') {
+                        feather.replace();
+                    }
+                }
+            },
+            error: function(xhr) {
+                console.error('Error loading conversations:', xhr);
+            }
+        });
+    }
+
+    // Start polling for conversations list
+    function startConversationPolling() {
+        if (conversationPolling) {
+            clearInterval(conversationPolling);
+        }
+        
+        conversationPolling = setInterval(function() {
+            loadConversations();
+        }, 10000); // Poll every 10 seconds
+    }
+
+    // Stop polling for conversations
+    function stopConversationPolling() {
+        if (conversationPolling) {
+            clearInterval(conversationPolling);
+            conversationPolling = null;
+        }
+    }
+
+    // Start conversation polling on page load
+    startConversationPolling();
 
     // Escape HTML to prevent XSS
     function escapeHtml(text) {
@@ -1478,6 +1585,7 @@ $(document).ready(function() {
     // Cleanup on page unload
     $(window).on('beforeunload', function() {
         stopMessagePolling();
+        stopConversationPolling();
     });
 });
 </script>
